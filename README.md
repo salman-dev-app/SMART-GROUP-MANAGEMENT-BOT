@@ -174,7 +174,6 @@ https://devbot.yourname.workers.dev/setup
 | `/credit` | Developer profile & contact |
 | `/ping` | Latency check |
 | `/stats` | Bot usage statistics |
-| `/credit` | Developer profile card |
 
 ### 🛡️ Moderation *(admins only)*
 
