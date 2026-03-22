@@ -1,0 +1,44 @@
+{
+  "name": "salman-dev-tools",
+  "version": "2.0.0",
+  "description": "𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 — Premium developer Telegram bot for Cloudflare Workers by Md Salman Biswas",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 8787",
+    "dev:local": "wrangler dev --local --port 8787",
+    "deploy": "wrangler deploy",
+    "deploy:dry": "wrangler deploy --dry-run",
+    "setup-webhook": "node scripts/setup-webhook.mjs",
+    "delete-webhook": "node scripts/delete-webhook.mjs",
+    "logs": "wrangler tail",
+    "kv:create": "wrangler kv:namespace create BOT_KV",
+    "kv:create:preview": "wrangler kv:namespace create BOT_KV --preview",
+    "lint": "eslint src/ --ext .js",
+    "test": "node scripts/test.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0",
+    "eslint": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "cloudflare-workers",
+    "developer-tools",
+    "moderation"
+  ],
+  "license": "MIT",
+  "author": "Md Salman Biswas <mdsalmanhelp@gmail.com> (https://github.com/salman-dev-app)",
+  "homepage": "https://github.com/salman-dev-app/SMART-GROUP-MANAGEMENT-BOT#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/salman-dev-app/SMART-GROUP-MANAGEMENT-BOT.git"
+  },
+  "bugs": {
+    "url": "https://github.com/salman-dev-app/SMART-GROUP-MANAGEMENT-BOT/issues"
+  }
+}
