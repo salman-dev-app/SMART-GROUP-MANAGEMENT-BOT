@@ -67,7 +67,7 @@ export class StateManager {
   }
 }
 
-// ── User warnings management ─────────────────────────────────
+//  User warnings management 
 
 export async function getWarnings(state, userId, chatId) {
   const key = `warn:${chatId}:${userId}`;
@@ -87,7 +87,7 @@ export async function clearWarnings(state, userId, chatId) {
   await state.delete(key);
 }
 
-// ── User language preferences ────────────────────────────────
+//  User language preferences 
 
 export async function getUserLang(state, userId) {
   const key = `lang:${userId}`;
@@ -109,7 +109,7 @@ export async function setChatLang(state, chatId, lang) {
   await state.set(key, lang, TTL.SESSION);
 }
 
-// ── Spam / Rate limiting ─────────────────────────────────────
+//  Spam / Rate limiting 
 
 export async function checkSpamRate(state, userId, chatId, limit = 5) {
   const key = `spam:${chatId}:${userId}`;
@@ -122,7 +122,7 @@ export async function resetSpamRate(state, userId, chatId) {
   await state.delete(key);
 }
 
-// ── Mute tracking ────────────────────────────────────────────
+//  Mute tracking 
 
 export async function setMuted(state, userId, chatId, minutes) {
   const key = `mute:${chatId}:${userId}`;
@@ -139,7 +139,7 @@ export async function removeMute(state, userId, chatId) {
   await state.delete(key);
 }
 
-// ── Global statistics ────────────────────────────────────────
+//  Global statistics 
 
 export async function incrementStat(state, statKey) {
   const key = `stats:${statKey}`;

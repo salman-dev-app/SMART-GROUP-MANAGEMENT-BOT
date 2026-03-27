@@ -4,7 +4,7 @@
  */
 
 const CONVERSATION_PATTERNS = [
-  // ── Greetings ────────────────────────────────────────────────
+  //  Greetings 
   {
     patterns: [/\b(hi|hello|hey|howdy|sup|yo|greetings|hola|salut|bonjour)\b/i],
     intent: 'greeting',
@@ -16,7 +16,7 @@ const CONVERSATION_PATTERNS = [
     ]
   },
 
-  // ── How are you ──────────────────────────────────────────────
+  //  How are you 
   {
     patterns: [/how are you|how('s| is) it going|what'?s up|how do you do/i],
     intent: 'how_are_you',
@@ -28,7 +28,7 @@ const CONVERSATION_PATTERNS = [
     ]
   },
 
-  // ── Thanks ───────────────────────────────────────────────────
+  //  Thanks 
   {
     patterns: [/\b(thanks|thank you|thx|ty|cheers|appreciate)\b/i],
     intent: 'thanks',
@@ -40,7 +40,7 @@ const CONVERSATION_PATTERNS = [
     ]
   },
 
-  // ── Goodbye ──────────────────────────────────────────────────
+  //  Goodbye 
   {
     patterns: [/\b(bye|goodbye|see you|cya|later|gotta go|ttyl|gtg)\b/i],
     intent: 'goodbye',
@@ -52,7 +52,7 @@ const CONVERSATION_PATTERNS = [
     ]
   },
 
-  // ── What can you do ──────────────────────────────────────────
+  //  What can you do 
   {
     patterns: [/what can you do|what are your features|capabilities|how to use/i],
     intent: 'capabilities',
@@ -61,7 +61,7 @@ const CONVERSATION_PATTERNS = [
     ]
   },
 
-  // ── JavaScript ───────────────────────────────────────────────
+  //  JavaScript 
   {
     patterns: [/\b(javascript|js|node\.?js|node js)\b.*\b(learn|start|tutorial|guide|tips?|best practice)/i,
                /best practice.*\b(javascript|js)\b/i],
@@ -71,7 +71,7 @@ const CONVERSATION_PATTERNS = [
     ]
   },
 
-  // ── Python ───────────────────────────────────────────────────
+  //  Python 
   {
     patterns: [/\b(python|py)\b.*\b(learn|start|tutorial|guide|tips?|best practice)/i,
                /best practice.*\bpython\b/i],
@@ -81,7 +81,7 @@ const CONVERSATION_PATTERNS = [
     ]
   },
 
-  // ── Git ──────────────────────────────────────────────────────
+  //  Git 
   {
     patterns: [/\bgit\b.*(help|command|tips?|cheat|workflow|reset|rebase|merge|conflict|undo|commit|push|pull)/i,
                /(git|version control|vcs).*(how|what|explain)/i,
@@ -92,7 +92,7 @@ const CONVERSATION_PATTERNS = [
     ]
   },
 
-  // ── Docker ───────────────────────────────────────────────────
+  //  Docker 
   {
     patterns: [/\bdocker\b.*(help|command|tips?|cheat|compose|container|image|build)/i,
                /(docker|container|containerize).*(how|what|explain|example)/i],
@@ -102,7 +102,7 @@ const CONVERSATION_PATTERNS = [
     ]
   },
 
-  // ── REST API ─────────────────────────────────────────────────
+  //  REST API 
   {
     patterns: [/(rest|restful|api).*(design|best practice|principle|guide|tips?)/i,
                /how.*(design|build|create).*(api|rest|endpoint)/i],
@@ -112,7 +112,7 @@ const CONVERSATION_PATTERNS = [
     ]
   },
 
-  // ── Debugging ────────────────────────────────────────────────
+  //  Debugging 
   {
     patterns: [/\b(debug|debugging|bug|error|fix|troubleshoot)\b.*(how|tips?|help|strategy|approach)/i,
                /how.*(find|fix|solve).*(bug|error|issue|problem)/i],
@@ -122,7 +122,7 @@ const CONVERSATION_PATTERNS = [
     ]
   },
 
-  // ── Database ─────────────────────────────────────────────────
+  //  Database 
   {
     patterns: [/(database|sql|nosql|postgres|mysql|mongodb|redis).*(tips?|best practice|choose|compare|difference)/i,
                /sql vs nosql|relational vs document/i],
@@ -132,7 +132,7 @@ const CONVERSATION_PATTERNS = [
     ]
   },
 
-  // ── Security ─────────────────────────────────────────────────
+  //  Security 
   {
     patterns: [/(security|secure|xss|sql injection|csrf|authentication|authorization|jwt|oauth).*(tips?|best practice|guide|how)/i,
                /how.*(secure|protect|prevent).*(app|api|website|endpoint)/i],
@@ -142,7 +142,7 @@ const CONVERSATION_PATTERNS = [
     ]
   },
 
-  // ── Performance ──────────────────────────────────────────────
+  //  Performance 
   {
     patterns: [/(performance|optimize|speed|fast|slow|latency|bottleneck).*(tips?|improve|how|guide)/i,
                /how.*(improve|increase|optimize).*(performance|speed)/i],
@@ -152,7 +152,7 @@ const CONVERSATION_PATTERNS = [
     ]
   },
 
-  // ── Cloud/Serverless ─────────────────────────────────────────
+  //  Cloud/Serverless 
   {
     patterns: [/(cloudflare|aws|gcp|azure|serverless|workers|lambda|edge).*(tips?|guide|difference|explain|how)/i],
     intent: 'cloud',
@@ -161,7 +161,7 @@ const CONVERSATION_PATTERNS = [
     ]
   },
 
-  // ── TypeScript ───────────────────────────────────────────────
+  //  TypeScript 
   {
     patterns: [/\btypescript\b.*(tips?|guide|learn|help|best practice|vs javascript)/i,
                /typescript vs javascript|should i use typescript/i],
@@ -171,7 +171,7 @@ const CONVERSATION_PATTERNS = [
     ]
   },
 
-  // ── Code review ──────────────────────────────────────────────
+  //  Code review 
   {
     patterns: [/(code review|pr|pull request).*(tips?|best practice|how|guide)/i,
                /how.*(review|write).*(code|pr|pull request)/i],
@@ -181,7 +181,7 @@ const CONVERSATION_PATTERNS = [
     ]
   },
 
-  // ── Bot / Telegram ───────────────────────────────────────────
+  //  Bot / Telegram 
   {
     patterns: [/(telegram|bot|webhook|polling).*(how|make|build|create|setup)/i,
                /how.*(make|build|create).*(telegram bot|bot)/i],
@@ -191,7 +191,7 @@ const CONVERSATION_PATTERNS = [
     ]
   },
 
-  // ── Regex ────────────────────────────────────────────────────
+  //  Regex 
   {
     patterns: [/(regex|regular expression).*(help|explain|how|tips?|learn|guide)/i],
     intent: 'regex_help',
@@ -200,7 +200,7 @@ const CONVERSATION_PATTERNS = [
     ]
   },
 
-  // ── Random ───────────────────────────────────────────────────
+  //  Random 
   {
     patterns: [/\b(random|fun fact|interesting|did you know)\b/i],
     intent: 'fun_fact',
@@ -213,7 +213,7 @@ const CONVERSATION_PATTERNS = [
     ]
   },
 
-  // ── Feeling stuck ────────────────────────────────────────────
+  //  Feeling stuck 
   {
     patterns: [/\b(stuck|frustrated|help me|lost|confused|don'?t understand|what.*do)\b.*\b(code|bug|problem|issue)\b/i,
                /\b(i'?m? ?(stuck|lost|confused))\b/i],
@@ -223,7 +223,7 @@ const CONVERSATION_PATTERNS = [
     ]
   },
 
-  // ── Best programming language ────────────────────────────────
+  //  Best programming language 
   {
     patterns: [/(best|which|what).*(programming|coding).*(language|lang)/i,
                /(should i|what).*(learn|use|pick|choose).*(language|lang|programming)/i],
@@ -233,7 +233,7 @@ const CONVERSATION_PATTERNS = [
     ]
   },
 
-  // ── Fallback / General ───────────────────────────────────────
+  //  Fallback / General 
   {
     patterns: [/.*/],
     intent: 'fallback',
