@@ -1,580 +1,396 @@
 /**
- * Multi-language support data
- * Bot: 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀
- * Developer: Md Salman Biswas (salman-dev-app)
- * Supported: English (en), Spanish (es), French (fr), German (de),
- *            Portuguese (pt), Russian (ru), Chinese (zh), Arabic (ar)
+ *   𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 — Multi-Language Premium Edition
+ *   Supported: EN · ES · FR · DE · PT · RU · ZH · AR
+ *              HI (Hindi) · BN (Bangla)
  */
 
 export const LANGUAGES = {
+
+  //  🇺🇸 English
   en: {
-    name: 'English',
+    name: '𝔼𝕟𝕘𝕝𝕚𝕤𝕙',
     flag: '🇺🇸',
     strings: {
-      welcome: `👋 *Welcome to 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀!*\n\nI'm your premium developer-focused assistant. Here's what I can do:\n\n🛡️ *Moderation* – Spam filtering, warnings, bans\n💬 *Chat* – Answer dev questions conversationally\n🛠️ *Dev Tools* – Format JSON, test APIs, code snippets\n🎉 *Fun* – Jokes, quotes, polls\n🌍 *Multi-lang* – Switch language with /lang\n👨‍💻 *Developer* – /credit to meet the creator\n\nType /help to see all commands!`,
-      help: `📚 *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 Command Reference*\n\n*🛡️ Moderation (Admins)*\n/warn @user [reason] – Warn a user\n/ban @user [reason] – Ban a user\n/unban @user – Unban a user\n/mute @user [minutes] – Mute a user\n/unmute @user – Unmute a user\n/warnings @user – Check warnings\n/clearwarns @user – Clear all warnings\n\n*🛠️ Developer Tools*\n/json <data> – Format & validate JSON\n/encode <text> – Base64 encode\n/decode <text> – Base64 decode\n/hash <text> – Generate SHA-256 hash\n/regex <pattern> <text> – Test regex\n/snippet <language> – Get code snippet\n/timestamp [unix] – Convert timestamp\n/uuid – Generate UUID\n/color <hex/rgb> – Convert color codes\n/urlencode <text> – URL encode\n/urldecode <text> – URL decode\n/escape <text> – Escape HTML entities\n\n*💬 Conversation*\nJust chat with me! I understand dev topics.\n\n*🎉 Fun*\n/joke – Random developer joke\n/quote – Dev wisdom quote\n/poll <question> | opt1 | opt2 ... – Create a poll\n/8ball <question> – Ask the magic 8-ball\n/dice [sides] – Roll a dice\n\n*🌍 Language*\n/lang – Show language menu\n/lang <code> – Set language (en/es/fr/de/pt/ru/zh/ar)\n\n*ℹ️ Info*\n/start – Welcome message\n/help – This help message\n/stats – Bot statistics\n/about – About this bot\n/credit – Meet the developer\n/ping – Check bot latency`,
-      unknownCommand: "❓ Unknown command. Type /help to see all available commands.",
-      noPermission: "🚫 You don't have permission to use this command. Only admins can do that.",
-      userNotFound: "❓ User not found. Please reply to a message or use @username.",
-      warnSuccess: "⚠️ *{user}* has been warned. [{count}/3 warnings]\n📝 Reason: {reason}",
-      warnBan: "🔨 *{user}* has been automatically banned after {count} warnings.",
-      banSuccess: "🔨 *{user}* has been banned.\n📝 Reason: {reason}",
-      unbanSuccess: "✅ *{user}* has been unbanned.",
-      muteSuccess: "🔇 *{user}* has been muted for {duration} minutes.",
-      unmuteSuccess: "🔊 *{user}* has been unmuted.",
-      spamDetected: "🚨 Spam detected from *{user}*. Message removed.",
-      spamWarned: "⚠️ *{user}* – Please don't spam. This is your warning.",
-      warningsCleared: "✅ Warnings for *{user}* have been cleared.",
-      warningsList: "📋 *{user}* has {count} warning(s).",
-      noWarnings: "✅ *{user}* has no warnings.",
-      langChanged: "✅ Language changed to {lang} {flag}",
-      langMenu: "🌍 *Select a Language*\n\nCurrent: {current} {flag}\n\nAvailable languages:",
-      statsTitle: "📊 *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 Statistics*",
-      statsCommands: "Commands processed: {count}",
-      statsMessages: "Messages analyzed: {count}",
-      statsSpam: "Spam blocked: {count}",
-      statsWarnings: "Warnings issued: {count}",
-      statsBans: "Users banned: {count}",
-      about: `ℹ️ *About 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*\n\n🤖 A premium developer-focused Telegram bot\n⚡ Powered by Cloudflare Workers (free tier)\n🧠 Rule-based AI conversations (no external API)\n🌍 8 language support\n🛡️ Smart spam moderation & auto-ban\n\n*Version:* 2.0.0\n*Runtime:* Cloudflare Workers\n*License:* MIT\n\n👨‍💻 *Built by:* [Md Salman Biswas](https://github.com/salman-dev-app)\nType /credit to see full developer profile.`,
-      credit: `👨‍💻 *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 — Developer Credit*\n\n━━━━━━━━━━━━━━━━━━━━━━\n🏆 *Md Salman Biswas*\n🎯 Senior Software Engineer\n━━━━━━━━━━━━━━━━━━━━━━\n\n📌 *Specialization:*\nBuilding highly scalable, secure & maintainable enterprise applications\n\n🛠️ *Core Expertise:*\n• Extensive Tech Stack (Frontend & Backend)\n• Global Enterprise Standards\n• Mobile First Architecture\n• 100% Clean Code (SOLID & DRY)\n• Fast Execution & Optimized Systems\n• Cloud Infrastructure (Docker, AWS)\n\n🌐 *Connect:*\n📧 mdsalmanhelp@gmail.com\n💬 [Telegram](https://t.me/Otakuosenpai)\n📘 [Facebook](https://facebook.com/salmandevapp)\n📱 [WhatsApp](https://wa.me/8801840933137)\n🐙 [GitHub](https://github.com/salman-dev-app)\n\n━━━━━━━━━━━━━━━━━━━━━━\n_© 2024-2026 Md Salman Biswas. All rights reserved._`,
-      ping: "🏓 Pong! Latency: {latency}ms",
-      jsonValid: "✅ *Valid JSON*\n\n```json\n{formatted}\n```",
-      jsonInvalid: "❌ *Invalid JSON*\n\nError: {error}",
-      uuidGenerated: "🔑 *Generated UUID*\n\n`{uuid}`",
-      hashGenerated: "🔐 *SHA-256 Hash*\n\nInput: `{input}`\nHash: `{hash}`",
-      encodedResult: "🔤 *Base64 Encoded*\n\nInput: `{input}`\nOutput: `{output}`",
-      decodedResult: "🔤 *Base64 Decoded*\n\nInput: `{input}`\nOutput: `{output}`",
-      regexMatch: "✅ *Regex Match Found*\n\nPattern: `{pattern}`\nMatches: {matches}",
-      regexNoMatch: "❌ *No Regex Match*\n\nPattern: `{pattern}`\nText: `{text}`",
-      regexError: "❌ *Invalid Regex Pattern*\n\nError: {error}",
-      timestampResult: "🕐 *Timestamp Conversion*\n\nUnix: `{unix}`\nUTC: `{utc}`\nLocal: `{local}`",
-      colorResult: "🎨 *Color Conversion*\n\nInput: `{input}`\nHEX: `{hex}`\nRGB: `{rgb}`\nHSL: `{hsl}`",
-      colorInvalid: "❌ Invalid color format. Use #RRGGBB or rgb(r,g,b)",
-      urlEncoded: "🔗 *URL Encoded*\n\nOutput: `{output}`",
-      urlDecoded: "🔗 *URL Decoded*\n\nOutput: `{output}`",
-      htmlEscaped: "🔒 *HTML Escaped*\n\nOutput: `{output}`",
-      snippetNotFound: "❓ No snippet found for `{lang}`. Available: js, py, go, rs, ts, java, cpp, sql, bash, css",
-      diceRoll: "🎲 You rolled a *{result}* (d{sides})",
-      eightBall: "🎱 *{answer}*",
-      pollCreated: "📊 *Poll created!*",
-      pollQuestion: "*{question}*",
-      needArgs: "❓ Please provide the required arguments. Type /help for usage.",
+      welcome: `✨ *𝗪𝗲𝗹𝗰𝗼𝗺𝗲 𝘁𝗼 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀!* ✨\n\n🤖 𝙔𝙤𝙪𝙧 𝙋𝙧𝙚𝙢𝙞𝙪𝙢 𝘿𝙚𝙫𝙚𝙡𝙤𝙥𝙚𝙧 𝘼𝙨𝙨𝙞𝙨𝙩𝙖𝙣𝙩\n\n🛡️ Smart Moderation\n🛠️ Developer Tools\n🎉 Fun & Games\n🌍 10 Languages\n💡 AI Chat & Snippets\n🔐 Password Generator\n\n_Tap the buttons below to explore!_ 👇`,
+      help: `📚 *𝗖𝗼𝗺𝗺𝗮𝗻𝗱 𝗖𝗲𝗻𝘁𝗿𝗲 — 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*\n\n🛡️ *𝗠𝗼𝗱𝗲𝗿𝗮𝘁𝗶𝗼𝗻* _(Admins only)_\n /warn — Warn a user\n /ban — Ban a user\n /unban — Unban a user\n /mute — Mute a user\n /unmute — Unmute a user\n /warnings — Check warnings\n /clearwarns — Clear warnings\n\n🛠️ *𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*\n /json — Format & validate JSON\n /encode — Base64 encode\n /decode — Base64 decode\n /hash — SHA-256 hash\n /uuid — Generate UUID v4\n /regex — Test regex pattern\n /snippet — Code snippets\n /timestamp — Convert timestamp\n /color — Color converter\n /urlencode — URL encode\n /urldecode — URL decode\n /escape — HTML escape\n /calc — Calculator\n /password — Password generator\n\n🎉 *𝗙𝘂𝗻*\n /joke — Dev joke\n /quote — Dev wisdom\n /poll — Create poll\n /8ball — Magic 8-ball\n /dice — Roll dice 🎲\n\nℹ️ *𝗜𝗻𝗳𝗼*\n /start — Home menu\n /stats — Bot statistics\n /about — About the bot\n /credit — Developer info\n /ping — Latency check\n /rules — Group rules\n /lang — Change language`,
+      unknownCommand: "❓ *𝙐𝙣𝙠𝙣𝙤𝙬𝙣 𝙘𝙤𝙢𝙢𝙖𝙣𝙙.* Type /help to see all available commands.",
+      noPermission: "🚫 *𝘼𝙘𝙘𝙚𝙨𝙨 𝘿𝙚𝙣𝙞𝙚𝙙!*\nOnly admins can use this command.",
+      userNotFound: "❓ *𝙐𝙨𝙚𝙧 𝙉𝙤𝙩 𝙁𝙤𝙪𝙣𝙙.*\nReply to a message or provide a valid @username.",
+      warnSuccess: "⚠️ *𝗪𝗮𝗿𝗻𝗶𝗻𝗴 𝗜𝘀𝘀𝘂𝗲𝗱!*\n\n👤 User: *{user}*\n📊 Count: `{count}/3`\n📝 Reason: _{reason}_\n\n_3 warnings = auto ban_ 🔨",
+      warnBan: "🔨 *𝗔𝘂𝘁𝗼-𝗕𝗮𝗻𝗻𝗲𝗱!*\n\n👤 *{user}* has been permanently banned after {count} warnings.\n\n_Goodbye!_ 👋",
+      banSuccess: "🔨 *𝗨𝘀𝗲𝗿 𝗕𝗮𝗻𝗻𝗲𝗱!*\n\n👤 User: *{user}*\n📝 Reason: _{reason}_",
+      unbanSuccess: "✅ *𝗨𝗻𝗯𝗮𝗻𝗻𝗲𝗱!*\n\n👤 *{user}* has been unbanned and can rejoin.",
+      muteSuccess: "🔇 *𝗨𝘀𝗲𝗿 𝗠𝘂𝘁𝗲𝗱!*\n\n👤 User: *{user}*\n⏱️ Duration: `{duration} minutes`",
+      unmuteSuccess: "🔊 *𝗨𝗻𝗺𝘂𝘁𝗲𝗱!*\n\n👤 *{user}* can speak again.",
+      spamDetected: "🚨 *𝗦𝗽𝗮𝗺 𝗗𝗲𝘁𝗲𝗰𝘁𝗲𝗱!*\n\n👤 *{user}* — Message removed. Warning issued.",
+      spamWarned: "⚠️ *𝗦𝗹𝗼𝘄 𝗱𝗼𝘄𝗻!* *{user}* — Don't spam. This is your warning.",
+      warningsCleared: "✅ *𝗖𝗹𝗲𝗮𝗿𝗲𝗱!*\n\nAll warnings for *{user}* have been removed.",
+      warningsList: "📋 *𝗪𝗮𝗿𝗻𝗶𝗻𝗴𝘀*\n\n👤 *{user}* — `{count}/3` warnings",
+      noWarnings: "✅ *𝗖𝗹𝗲𝗮𝗻 𝗥𝗲𝗰𝗼𝗿𝗱!*\n\n👤 *{user}* has no warnings.",
+      langChanged: "✅ *𝙇𝙖𝙣𝙜𝙪𝙖𝙜𝙚 𝙪𝙥𝙙𝙖𝙩𝙚𝙙!*\n\nNow using: *{lang}* {flag}",
+      langMenu: "🌍 *𝗦𝗲𝗹𝗲𝗰𝘁 𝗟𝗮𝗻𝗴𝘂𝗮𝗴𝗲*\n\n📍 Current: *{current}* {flag}\n\n_Tap a button to switch:_",
+      statsTitle: "📊 *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 — 𝗟𝗶𝘃𝗲 𝗦𝘁𝗮𝘁𝘀*",
+      statsMessages: "Messages Analyzed: `{count}`",
+      statsCommands: "Commands Executed: `{count}`",
+      statsSpam: "Spam Blocked: `{count}`",
+      statsWarnings: "Warnings Issued: `{count}`",
+      statsBans: "Users Banned: `{count}`",
+      about: `🤖 *𝗔𝗯𝗼𝘂𝘁 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*\n\n⚡ Powered by Cloudflare Workers\n🧠 Rule-based AI (no external APIs)\n🌍 10 languages supported\n🛡️ Smart spam moderation\n🔐 Password generator\n🛠️ 15+ developer tools\n\n📦 *Version:* \`3.0.0\`\n⚙️ *Runtime:* Cloudflare Workers\n📜 *License:* MIT\n\n👨‍💻 Built by [Md Salman Biswas](https://github.com/salman-dev-app)`,
+      credit: `👨‍💻 *𝗗𝗲𝘃𝗲𝗹𝗼𝗽𝗲𝗿 𝗖𝗮𝗿𝗱*\n\n\n🏆 *𝙈𝙙 𝙎𝙖𝙡𝙢𝙖𝙣 𝘽𝙞𝙨𝙬𝙖𝙨*\n🎯 𝙎𝙚𝙣𝙞𝙤𝙧 𝙎𝙤𝙛𝙩𝙬𝙖𝙧𝙚 𝙀𝙣𝙜𝙞𝙣𝙚𝙚𝙧\n\n\n🛠️ *Expertise:*\n• Scalable Enterprise Apps\n• Cloud Architecture (AWS, CF)\n• Mobile-First Architecture\n• Clean Code (SOLID & DRY)\n• Docker & DevOps\n\n🌐 *Connect:*\n📧 mdsalmanhelp@gmail.com\n💬 [Telegram](https://t.me/Otakuosenpai)\n📘 [Facebook](https://facebook.com/salmandevapp)\n🐙 [GitHub](https://github.com/salman-dev-app)\n\n\n_© 2024-2026 Md Salman Biswas_`,
+      ping: "🏓 *𝙋𝙤𝙣𝙜!*\n⚡ Latency: `{latency}ms`\n🟢 Status: Online",
+      jsonValid: "✅ *𝗩𝗮𝗹𝗶𝗱 𝗝𝗦𝗢𝗡*\n\n```json\n{formatted}\n```",
+      jsonInvalid: "❌ *𝗜𝗻𝘃𝗮𝗹𝗶𝗱 𝗝𝗦𝗢𝗡*\n\n🔍 Error: `{error}`",
+      hashGenerated: "🔐 *𝗦𝗛𝗔-𝟮𝟱𝟲 𝗛𝗮𝘀𝗵*\n\n📥 Input:\n`{input}`\n\n🔑 Hash:\n`{hash}`",
+      encodedResult: "🔤 *𝗕𝗮𝘀𝗲𝟲𝟰 𝗘𝗻𝗰𝗼𝗱𝗲𝗱*\n\n📥 Input: `{input}`\n📤 Output:\n`{output}`",
+      decodedResult: "🔤 *𝗕𝗮𝘀𝗲𝟲𝟰 𝗗𝗲𝗰𝗼𝗱𝗲𝗱*\n\n📥 Input: `{input}`\n📤 Output:\n`{output}`",
+      regexMatch: "✅ *𝗥𝗲𝗴𝗲𝘅 𝗠𝗮𝘁𝗰𝗵𝗲𝗱!*\n\n🔍 Pattern: `{pattern}`\n📋 Matches:{matches}",
+      regexNoMatch: "❌ *𝗡𝗼 𝗠𝗮𝘁𝗰𝗵*\n\n🔍 Pattern: `{pattern}`\n📝 Text: `{text}`",
+      regexError: "❌ *𝗜𝗻𝘃𝗮𝗹𝗶𝗱 𝗣𝗮𝘁𝘁𝗲𝗿𝗻*\n\n⚠️ Error: `{error}`",
+      colorResult: "🎨 *𝗖𝗼𝗹𝗼𝗿 𝗜𝗻𝗳𝗼*\n\n📥 Input: `{input}`\n🔵 HEX: `{hex}`\n🟢 RGB: `{rgb}`\n🟡 HSL: `{hsl}`",
+      colorInvalid: "❌ *𝗜𝗻𝘃𝗮𝗹𝗶𝗱 𝗖𝗼𝗹𝗼𝗿*\n\nUse: `#RRGGBB` or `rgb(r,g,b)`",
+      urlEncoded: "🔗 *𝗨𝗥𝗟 𝗘𝗻𝗰𝗼𝗱𝗲𝗱*\n\n`{output}`",
+      urlDecoded: "🔗 *𝗨𝗥𝗟 𝗗𝗲𝗰𝗼𝗱𝗲𝗱*\n\n`{output}`",
+      htmlEscaped: "🔒 *𝗛𝗧𝗠𝗟 𝗘𝘀𝗰𝗮𝗽𝗲𝗱*\n\n`{output}`",
+      snippetNotFound: "❓ *𝗡𝗼 𝗦𝗻𝗶𝗽𝗽𝗲𝘁 𝗙𝗼𝘂𝗻𝗱* for `{lang}`\n\nAvailable: `js py go rs ts java cpp sql bash css`",
+      diceRoll: "🎲 *𝗬𝗼𝘂 𝗿𝗼𝗹𝗹𝗲𝗱: {result}* on a d{sides}!",
+      eightBall: "*{answer}*",
+      needArgs: "❓ *𝗠𝗶𝘀𝘀𝗶𝗻𝗴 𝗔𝗿𝗴𝘂𝗺𝗲𝗻𝘁𝘀.* Type /help for usage.",
+      uuidGenerated: "🔑 *𝗨𝗨𝗜𝗗 𝘃𝟰 𝗚𝗲𝗻𝗲𝗿𝗮𝘁𝗲𝗱*",
     }
   },
 
+  //  🇪🇸 Spanish
   es: {
-    name: 'Español',
+    name: '𝔼𝕤𝕡𝕒ñ𝕠𝕝',
     flag: '🇪🇸',
     strings: {
-      welcome: `👋 *¡Bienvenido a 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀!*\n\nSoy tu asistente premium enfocado en desarrollo. Aquí lo que puedo hacer:\n\n🛡️ *Moderación* – Filtro de spam, advertencias, bans\n💬 *Chat* – Respondo preguntas de dev\n🛠️ *Herramientas Dev* – Formatear JSON, snippets, etc.\n🎉 *Diversión* – Chistes, citas, encuestas\n🌍 *Multi-idioma* – Cambia idioma con /lang\n👨‍💻 *Desarrollador* – /credit para conocer al creador\n\n¡Escribe /help para ver todos los comandos!`,
-      help: `📚 *Referencia de Comandos DevBot*\n\n*🛡️ Moderación (Admins)*\n/warn @user [razón] – Advertir usuario\n/ban @user [razón] – Banear usuario\n/unban @user – Desbanear usuario\n/mute @user [min] – Silenciar usuario\n/unmute @user – Quitar silencio\n/warnings @user – Ver advertencias\n/clearwarns @user – Limpiar advertencias\n\n*🛠️ Herramientas Dev*\n/json <data> – Formatear y validar JSON\n/encode <texto> – Codificar en Base64\n/decode <texto> – Decodificar Base64\n/hash <texto> – Hash SHA-256\n/regex <patrón> <texto> – Probar regex\n/snippet <lenguaje> – Obtener snippet\n/timestamp [unix] – Convertir timestamp\n/uuid – Generar UUID\n/color <hex/rgb> – Convertir colores\n\n*🎉 Diversión*\n/joke – Chiste de desarrollador\n/quote – Cita de sabiduría dev\n/poll <pregunta> | op1 | op2 – Crear encuesta\n/8ball <pregunta> – Bola mágica\n/dice [caras] – Tirar dados\n\n*🌍 Idioma*\n/lang – Menú de idiomas\n/lang <código> – Cambiar idioma`,
-      unknownCommand: "❓ Comando desconocido. Escribe /help para ver los comandos disponibles.",
-      noPermission: "🚫 No tienes permiso para usar este comando. Solo los admins pueden hacerlo.",
-      userNotFound: "❓ Usuario no encontrado. Responde a un mensaje o usa @usuario.",
-      warnSuccess: "⚠️ *{user}* ha sido advertido. [{count}/3 advertencias]\n📝 Razón: {reason}",
-      warnBan: "🔨 *{user}* ha sido baneado automáticamente tras {count} advertencias.",
-      banSuccess: "🔨 *{user}* ha sido baneado.\n📝 Razón: {reason}",
-      unbanSuccess: "✅ *{user}* ha sido desbaneado.",
-      muteSuccess: "🔇 *{user}* ha sido silenciado por {duration} minutos.",
-      unmuteSuccess: "🔊 *{user}* ha sido silenciado.",
-      spamDetected: "🚨 Spam detectado de *{user}*. Mensaje eliminado.",
-      spamWarned: "⚠️ *{user}* – Por favor no hagas spam. Esta es tu advertencia.",
-      warningsCleared: "✅ Las advertencias de *{user}* han sido limpiadas.",
-      warningsList: "📋 *{user}* tiene {count} advertencia(s).",
-      noWarnings: "✅ *{user}* no tiene advertencias.",
-      langChanged: "✅ Idioma cambiado a {lang} {flag}",
-      langMenu: "🌍 *Selecciona un Idioma*\n\nActual: {current} {flag}\n\nIdiomas disponibles:",
-      statsTitle: "📊 *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 Estadísticas*",
-      statsCommands: "Comandos procesados: {count}",
-      statsMessages: "Mensajes analizados: {count}",
-      statsSpam: "Spam bloqueado: {count}",
-      statsWarnings: "Advertencias emitidas: {count}",
-      statsBans: "Usuarios baneados: {count}",
-      about: `ℹ️ *Acerca de 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*\n\n🤖 Bot premium de Telegram para desarrolladores\n⚡ Impulsado por Cloudflare Workers\n🧠 IA conversacional basada en reglas\n🌍 8 idiomas soportados\n\n👨‍💻 *Creado por:* [Md Salman Biswas](https://github.com/salman-dev-app)\nEscribe /credit para ver el perfil del desarrollador.`,
-      credit: `👨‍💻 *Crédito del Desarrollador — 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*\n\n🏆 *Md Salman Biswas*\n🎯 Ingeniero de Software Senior\n\n🌐 mdsalmanhelp@gmail.com\n💬 [Telegram](https://t.me/Otakuosenpai)\n📘 [Facebook](https://facebook.com/salmandevapp)\n📱 [WhatsApp](https://wa.me/8801840933137)\n🐙 [GitHub](https://github.com/salman-dev-app)\n\n_© 2024-2026 Md Salman Biswas._`,
-      ping: "🏓 ¡Pong! Latencia: {latency}ms",
-      jsonValid: "✅ *JSON Válido*\n\n```json\n{formatted}\n```",
-      jsonInvalid: "❌ *JSON Inválido*\n\nError: {error}",
-      uuidGenerated: "🔑 *UUID Generado*\n\n`{uuid}`",
-      hashGenerated: "🔐 *Hash SHA-256*\n\nEntrada: `{input}`\nHash: `{hash}`",
-      encodedResult: "🔤 *Codificado en Base64*\n\nEntrada: `{input}`\nSalida: `{output}`",
-      decodedResult: "🔤 *Decodificado de Base64*\n\nEntrada: `{input}`\nSalida: `{output}`",
-      regexMatch: "✅ *Coincidencia Regex*\n\nPatrón: `{pattern}`\nCoincidencias: {matches}",
-      regexNoMatch: "❌ *Sin Coincidencia Regex*\n\nPatrón: `{pattern}`\nTexto: `{text}`",
-      regexError: "❌ *Patrón Regex Inválido*\n\nError: {error}",
-      timestampResult: "🕐 *Conversión de Timestamp*\n\nUnix: `{unix}`\nUTC: `{utc}`",
-      colorResult: "🎨 *Conversión de Color*\n\nEntrada: `{input}`\nHEX: `{hex}`\nRGB: `{rgb}`\nHSL: `{hsl}`",
-      colorInvalid: "❌ Formato de color inválido. Usa #RRGGBB o rgb(r,g,b)",
-      urlEncoded: "🔗 *URL Codificada*\n\nSalida: `{output}`",
-      urlDecoded: "🔗 *URL Decodificada*\n\nSalida: `{output}`",
-      htmlEscaped: "🔒 *HTML Escapado*\n\nSalida: `{output}`",
-      snippetNotFound: "❓ No hay snippet para `{lang}`. Disponibles: js, py, go, rs, ts, java, cpp, sql, bash, css",
-      diceRoll: "🎲 Sacaste un *{result}* (d{sides})",
-      eightBall: "🎱 *{answer}*",
-      pollCreated: "📊 *¡Encuesta creada!*",
-      pollQuestion: "*{question}*",
-      needArgs: "❓ Por favor proporciona los argumentos requeridos. Escribe /help para uso.",
+      welcome: `✨ *¡𝗕𝗶𝗲𝗻𝘃𝗲𝗻𝗶𝗱𝗼 𝗮 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀!* ✨\n\n🤖 𝙏𝙪 𝙖𝙨𝙞𝙨𝙩𝙚𝙣𝙩𝙚 𝙥𝙧𝙚𝙢𝙞𝙪𝙢 𝙙𝙚 𝙙𝙚𝙨𝙖𝙧𝙧𝙤𝙡𝙡𝙤\n\n🛡️ Moderación Inteligente\n🛠️ Herramientas de Dev\n🎉 Diversión y Juegos\n🌍 10 Idiomas\n\n_¡Toca los botones!_ 👇`,
+      help: `📚 *𝗖𝗼𝗺𝗮𝗻𝗱𝗼𝘀 — 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*\n\n🛡️ /warn /ban /unban /mute /unmute\n🛠️ /json /encode /decode /hash /uuid\n🎉 /joke /quote /poll /8ball /dice\nℹ️ /stats /about /credit /ping /lang`,
+      unknownCommand: "❓ *𝙈𝙖𝙣𝙙𝙖𝙩𝙤 𝙙𝙚𝙨𝙘𝙤𝙣𝙤𝙘𝙞𝙙𝙤.* Escribe /help.",
+      noPermission: "🚫 *¡𝘼𝙘𝙘𝙚𝙨𝙤 𝙙𝙚𝙣𝙚𝙜𝙖𝙙𝙤!* Solo los admins pueden usar esto.",
+      userNotFound: "❓ *𝙐𝙨𝙪𝙖𝙧𝙞𝙤 𝙣𝙤 𝙚𝙣𝙘𝙤𝙣𝙩𝙧𝙖𝙙𝙤.*",
+      warnSuccess: "⚠️ *¡𝗔𝗱𝘃𝗲𝗿𝘁𝗲𝗻𝗰𝗶𝗮!*\n👤 *{user}* — `{count}/3`\n📝 _{reason}_",
+      warnBan: "🔨 *¡𝗕𝗮𝗻𝗲𝗮𝗱𝗼!*\n👤 *{user}* baneado tras {count} advertencias.",
+      banSuccess: "🔨 *𝗕𝗮𝗻𝗲𝗮𝗱𝗼!*\n👤 *{user}*\n📝 _{reason}_",
+      unbanSuccess: "✅ *𝗗𝗲𝘀𝗯𝗮𝗻𝗲𝗮𝗱𝗼!*\n👤 *{user}*",
+      muteSuccess: "🔇 *𝗦𝗶𝗹𝗲𝗻𝗰𝗶𝗮𝗱𝗼!*\n👤 *{user}* — {duration} min",
+      unmuteSuccess: "🔊 *¡𝗩𝘂𝗲𝗹𝘃𝗲 𝗮 𝗵𝗮𝗯𝗹𝗮𝗿!*\n👤 *{user}*",
+      spamDetected: "🚨 *𝗦𝗽𝗮𝗺 𝗱𝗲𝘁𝗲𝗰𝘁𝗮𝗱𝗼!*\n👤 *{user}*",
+      spamWarned: "⚠️ *{user}* — ¡No hagas spam!",
+      warningsCleared: "✅ *𝗔𝗱𝘃𝗲𝗿𝘁𝗲𝗻𝗰𝗶𝗮𝘀 𝗹𝗶𝗺𝗽𝗶𝗮𝗱𝗮𝘀!*\n👤 *{user}*",
+      warningsList: "📋 *{user}* — `{count}/3` advertencias",
+      noWarnings: "✅ *{user}* sin advertencias.",
+      langChanged: "✅ Idioma: *{lang}* {flag}",
+      langMenu: "🌍 *𝗦𝗲𝗹𝗲𝗰𝗰𝗶𝗼𝗻𝗮 𝗜𝗱𝗶𝗼𝗺𝗮*\n\n📍 Actual: *{current}* {flag}",
+      statsTitle: "📊 *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 — 𝗘𝘀𝘁𝗮𝗱í𝘀𝘁𝗶𝗰𝗮𝘀*",
+      statsMessages: "Mensajes: `{count}`", statsCommands: "Comandos: `{count}`",
+      statsSpam: "Spam: `{count}`", statsWarnings: "Avisos: `{count}`", statsBans: "Bans: `{count}`",
+      about: `ℹ️ *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 v3.0*\nBot premium para desarrolladores.\n👨‍💻 [Md Salman Biswas](https://github.com/salman-dev-app)`,
+      credit: `👨‍💻 *𝗠𝗱 𝗦𝗮𝗹𝗺𝗮𝗻 𝗕𝗶𝘀𝘄𝗮𝘀*\n🎯 Senior Software Engineer\n🌐 [GitHub](https://github.com/salman-dev-app)`,
+      ping: "🏓 *𝙋𝙤𝙣𝙜!* `{latency}ms`",
+      jsonValid: "✅ *JSON Válido*\n\n```json\n{formatted}\n```", jsonInvalid: "❌ *JSON Inválido*\n`{error}`",
+      hashGenerated: "🔐 *SHA-256*\n`{hash}`", encodedResult: "🔤 *Base64*\n`{output}`",
+      decodedResult: "🔤 *Decodificado*\n`{output}`", regexMatch: "✅ *Coincidencia!*\n`{pattern}`{matches}",
+      regexNoMatch: "❌ *Sin coincidencia*", regexError: "❌ *Error regex:* `{error}`",
+      colorResult: "🎨 HEX:`{hex}` RGB:`{rgb}` HSL:`{hsl}`", colorInvalid: "❌ Color inválido",
+      urlEncoded: "🔗 `{output}`", urlDecoded: "🔗 `{output}`", htmlEscaped: "🔒 `{output}`",
+      snippetNotFound: "❓ Sin snippet para `{lang}`", diceRoll: "🎲 *¡{result}* en d{sides}!",
+      eightBall: "*{answer}*", needArgs: "❓ Faltan argumentos.", uuidGenerated: "🔑 *UUID v4*",
     }
   },
 
+  //  🇫🇷 French
   fr: {
-    name: 'Français',
+    name: 'ℱ𝓻𝓪𝓷𝓬̧𝓪𝓲𝓼',
     flag: '🇫🇷',
     strings: {
-      welcome: `👋 *Bienvenue sur 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀!*\n\nJe suis votre assistant premium pour développeurs. Voici ce que je peux faire:\n\n🛡️ *Modération* – Filtre spam, avertissements, bans\n💬 *Chat* – Répondre aux questions dev\n🛠️ *Outils Dev* – Formater JSON, snippets, etc.\n🎉 *Fun* – Blagues, citations, sondages\n🌍 *Multi-langue* – Changer de langue avec /lang\n👨‍💻 *Développeur* – /credit pour rencontrer le créateur\n\nTapez /help pour voir toutes les commandes!`,
-      help: `📚 *Référence des Commandes DevBot*\n\n*🛡️ Modération (Admins)*\n/warn @user [raison] – Avertir un utilisateur\n/ban @user [raison] – Bannir un utilisateur\n/mute @user [min] – Mettre en sourdine\n\n*🛠️ Outils Dev*\n/json <données> – Formater JSON\n/encode <texte> – Encoder en Base64\n/decode <texte> – Décoder Base64\n/hash <texte> – Hash SHA-256\n/uuid – Générer UUID\n\n*🎉 Fun*\n/joke – Blague de développeur\n/quote – Citation de sagesse\n/poll <question> | op1 | op2 – Créer sondage`,
-      unknownCommand: "❓ Commande inconnue. Tapez /help pour voir les commandes disponibles.",
-      noPermission: "🚫 Vous n'avez pas la permission d'utiliser cette commande.",
-      userNotFound: "❓ Utilisateur introuvable.",
-      warnSuccess: "⚠️ *{user}* a été averti. [{count}/3 avertissements]\n📝 Raison: {reason}",
-      warnBan: "🔨 *{user}* a été automatiquement banni après {count} avertissements.",
-      banSuccess: "🔨 *{user}* a été banni.\n📝 Raison: {reason}",
-      unbanSuccess: "✅ *{user}* a été débanni.",
-      muteSuccess: "🔇 *{user}* a été mis en sourdine pour {duration} minutes.",
-      unmuteSuccess: "🔊 *{user}* n'est plus en sourdine.",
-      spamDetected: "🚨 Spam détecté de *{user}*. Message supprimé.",
-      spamWarned: "⚠️ *{user}* – Pas de spam. C'est votre avertissement.",
-      warningsCleared: "✅ Avertissements de *{user}* effacés.",
-      warningsList: "📋 *{user}* a {count} avertissement(s).",
-      noWarnings: "✅ *{user}* n'a aucun avertissement.",
-      langChanged: "✅ Langue changée en {lang} {flag}",
-      langMenu: "🌍 *Sélectionner une Langue*\n\nActuelle: {current} {flag}\n\nLangues disponibles:",
-      statsTitle: "📊 *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 Statistiques*",
-      statsCommands: "Commandes traitées: {count}",
-      statsMessages: "Messages analysés: {count}",
-      statsSpam: "Spam bloqué: {count}",
-      statsWarnings: "Avertissements émis: {count}",
-      statsBans: "Utilisateurs bannis: {count}",
-      about: `ℹ️ *À propos de 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*\n\n🤖 Bot Telegram premium pour développeurs\n⚡ Propulsé par Cloudflare Workers\n🌍 8 langues supportées\n\n👨‍💻 *Créé par:* [Md Salman Biswas](https://github.com/salman-dev-app)\nTapez /credit pour voir le profil complet.`,
-      credit: `👨‍💻 *Crédit Développeur — 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*
-
-━━━━━━━━━━━━━━━━━━━━━━
-🏆 *Md Salman Biswas*
-🎯 Ingénieur Logiciel Senior
-━━━━━━━━━━━━━━━━━━━━━━
-
-📌 *Spécialisation:*
-Applications d'entreprise évolutives, sécurisées et maintenables
-
-🌐 *Contact:*
-📧 mdsalmanhelp@gmail.com
-💬 [Telegram](https://t.me/Otakuosenpai)
-📘 [Facebook](https://facebook.com/salmandevapp)
-📱 [WhatsApp](https://wa.me/8801840933137)
-🐙 [GitHub](https://github.com/salman-dev-app)
-
-━━━━━━━━━━━━━━━━━━━━━━
-_© 2024-2026 Md Salman Biswas. Tous droits réservés._`,
-      ping: "🏓 Pong! Latence: {latency}ms",
-      jsonValid: "✅ *JSON Valide*\n\n```json\n{formatted}\n```",
-      jsonInvalid: "❌ *JSON Invalide*\n\nErreur: {error}",
-      uuidGenerated: "🔑 *UUID Généré*\n\n`{uuid}`",
-      hashGenerated: "🔐 *Hash SHA-256*\n\nEntrée: `{input}`\nHash: `{hash}`",
-      encodedResult: "🔤 *Encodé en Base64*\n\nEntrée: `{input}`\nSortie: `{output}`",
-      decodedResult: "🔤 *Décodé de Base64*\n\nEntrée: `{input}`\nSortie: `{output}`",
-      regexMatch: "✅ *Correspondance Regex*\n\nMotif: `{pattern}`\nCorrespondances: {matches}",
-      regexNoMatch: "❌ *Aucune Correspondance*\n\nMotif: `{pattern}`",
-      regexError: "❌ *Motif Regex Invalide*\n\nErreur: {error}",
-      timestampResult: "🕐 *Conversion Timestamp*\n\nUnix: `{unix}`\nUTC: `{utc}`",
-      colorResult: "🎨 *Conversion Couleur*\n\nEntrée: `{input}`\nHEX: `{hex}`\nRGB: `{rgb}`\nHSL: `{hsl}`",
-      colorInvalid: "❌ Format couleur invalide.",
-      urlEncoded: "🔗 *URL Encodée*\n\nSortie: `{output}`",
-      urlDecoded: "🔗 *URL Décodée*\n\nSortie: `{output}`",
-      htmlEscaped: "🔒 *HTML Échappé*\n\nSortie: `{output}`",
-      snippetNotFound: "❓ Aucun snippet pour `{lang}`.",
-      diceRoll: "🎲 Vous avez obtenu *{result}* (d{sides})",
-      eightBall: "🎱 *{answer}*",
-      pollCreated: "📊 *Sondage créé!*",
-      pollQuestion: "*{question}*",
-      needArgs: "❓ Veuillez fournir les arguments requis.",
+      welcome: `✨ *𝗕𝗶𝗲𝗻𝘃𝗲𝗻𝘂 𝘀𝘂𝗿 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀!* ✨\n\n🤖 𝙑𝙤𝙩𝙧𝙚 𝙖𝙨𝙨𝙞𝙨𝙩𝙖𝙣𝙩 𝙙𝙚́𝙫 𝙥𝙧𝙚́𝙢𝙞𝙪𝙢\n\n_Appuyez sur les boutons!_ 👇`,
+      help: `📚 *𝗖𝗼𝗺𝗺𝗮𝗻𝗱𝗲𝘀*\n\n🛡️ /warn /ban /mute\n🛠️ /json /hash /uuid /snippet\n🎉 /joke /quote /dice\nℹ️ /stats /about /lang`,
+      unknownCommand: "❓ Commande inconnue.", noPermission: "🚫 Accès refusé.", userNotFound: "❓ Utilisateur introuvable.",
+      warnSuccess: "⚠️ *{user}* averti `{count}/3`\n📝 _{reason}_", warnBan: "🔨 *{user}* banni après {count} avertissements.",
+      banSuccess: "🔨 *{user}* banni.\n_{reason}_", unbanSuccess: "✅ *{user}* débanni.", muteSuccess: "🔇 *{user}* — {duration} min.",
+      unmuteSuccess: "🔊 *{user}* peut parler.", spamDetected: "🚨 Spam de *{user}* supprimé.", spamWarned: "⚠️ *{user}* ne spammez pas!",
+      warningsCleared: "✅ Avertissements supprimés pour *{user}*.", warningsList: "📋 *{user}* — `{count}/3`", noWarnings: "✅ *{user}* — aucun avertissement.",
+      langChanged: "✅ Langue: *{lang}* {flag}", langMenu: "🌍 *Langue*\nActuel: *{current}* {flag}",
+      statsTitle: "📊 *𝗦𝘁𝗮𝘁𝗶𝘀𝘁𝗶𝗾𝘂𝗲𝘀*", statsMessages: "Messages: `{count}`", statsCommands: "Commandes: `{count}`",
+      statsSpam: "Spam: `{count}`", statsWarnings: "Avertissements: `{count}`", statsBans: "Bans: `{count}`",
+      about: `ℹ️ *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 v3.0*\n👨‍💻 [Md Salman Biswas](https://github.com/salman-dev-app)`,
+      credit: `👨‍💻 *𝙈𝙙 𝙎𝙖𝙡𝙢𝙖𝙣 𝘽𝙞𝙨𝙬𝙖𝙨*\n🎯 Ingénieur Logiciel Senior\n🐙 [GitHub](https://github.com/salman-dev-app)`,
+      ping: "🏓 *𝙋𝙤𝙣𝙜!* `{latency}ms`",
+      jsonValid: "✅ *JSON Valide*\n```json\n{formatted}\n```", jsonInvalid: "❌ *JSON Invalide*\n`{error}`",
+      hashGenerated: "🔐 *SHA-256*\n`{hash}`", encodedResult: "🔤 *Base64*\n`{output}`",
+      decodedResult: "🔤 *Décodé*\n`{output}`", regexMatch: "✅ *Correspondance!*\n`{pattern}`{matches}",
+      regexNoMatch: "❌ *Pas de correspondance*", regexError: "❌ *Erreur regex:* `{error}`",
+      colorResult: "🎨 HEX:`{hex}` RGB:`{rgb}`", colorInvalid: "❌ Couleur invalide",
+      urlEncoded: "🔗 `{output}`", urlDecoded: "🔗 `{output}`", htmlEscaped: "🔒 `{output}`",
+      snippetNotFound: "❓ Snippet non trouvé: `{lang}`", diceRoll: "🎲 *{result}* sur d{sides}!",
+      eightBall: "*{answer}*", needArgs: "❓ Arguments manquants.", uuidGenerated: "🔑 *UUID v4*",
     }
   },
 
+  //  🇩🇪 German
   de: {
-    name: 'Deutsch',
+    name: '𝔇𝔢𝔲𝔱𝔰𝔠𝔥',
     flag: '🇩🇪',
     strings: {
-      welcome: `👋 *Willkommen bei 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀!*\n\nIch bin dein premium entwicklerorientierter Assistent:\n\n🛡️ *Moderation* – Spam-Filter, Warnungen, Bans\n💬 *Chat* – Dev-Fragen beantworten\n🛠️ *Dev-Tools* – JSON formatieren, Snippets, etc.\n🎉 *Spaß* – Witze, Zitate, Abstimmungen\n🌍 *Mehrsprachig* – Sprache mit /lang ändern\n👨‍💻 *Entwickler* – /credit um den Ersteller kennenzulernen\n\n/help für alle Befehle!`,
-      help: `📚 *DevBot Befehlsreferenz*\n\n/warn @user – Benutzer verwarnen\n/ban @user – Benutzer bannen\n/json – JSON formatieren\n/uuid – UUID generieren\n/joke – Entwicklerwitz\n/lang – Sprache ändern`,
-      unknownCommand: "❓ Unbekannter Befehl. /help für verfügbare Befehle.",
-      noPermission: "🚫 Keine Berechtigung für diesen Befehl.",
-      userNotFound: "❓ Benutzer nicht gefunden.",
-      warnSuccess: "⚠️ *{user}* wurde verwarnt. [{count}/3]\n📝 Grund: {reason}",
-      warnBan: "🔨 *{user}* wurde nach {count} Verwarnungen gebannt.",
-      banSuccess: "🔨 *{user}* wurde gebannt.\n📝 Grund: {reason}",
-      unbanSuccess: "✅ *{user}* wurde entbannt.",
-      muteSuccess: "🔇 *{user}* wurde für {duration} Minuten stummgeschaltet.",
-      unmuteSuccess: "🔊 *{user}* wurde entstummt.",
-      spamDetected: "🚨 Spam von *{user}* erkannt. Nachricht gelöscht.",
-      spamWarned: "⚠️ *{user}* – Kein Spam bitte.",
-      warningsCleared: "✅ Verwarnungen von *{user}* gelöscht.",
-      warningsList: "📋 *{user}* hat {count} Verwarnung(en).",
-      noWarnings: "✅ *{user}* hat keine Verwarnungen.",
-      langChanged: "✅ Sprache geändert zu {lang} {flag}",
-      langMenu: "🌍 *Sprache auswählen*\n\nAktuell: {current} {flag}\n\nVerfügbare Sprachen:",
-      statsTitle: "📊 *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 Statistiken*",
-      statsCommands: "Verarbeitete Befehle: {count}",
-      statsMessages: "Analysierte Nachrichten: {count}",
-      statsSpam: "Spam blockiert: {count}",
-      statsWarnings: "Verwarnungen: {count}",
-      statsBans: "Gebannte Benutzer: {count}",
-      about: `ℹ️ *Über 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*\n\n🤖 Premium Telegram Bot für Entwickler\n⚡ Cloudflare Workers\n🌍 8 Sprachen\n\n👨‍💻 *Erstellt von:* [Md Salman Biswas](https://github.com/salman-dev-app)\n/credit für vollständiges Profil.`,
-      credit: `👨‍💻 *Entwickler-Credits — 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*
-
-━━━━━━━━━━━━━━━━━━━━━━
-🏆 *Md Salman Biswas*
-🎯 Senior Software Engineer
-━━━━━━━━━━━━━━━━━━━━━━
-
-📌 *Spezialisierung:*
-Skalierbare, sichere und wartbare Unternehmensanwendungen
-
-🌐 *Kontakt:*
-📧 mdsalmanhelp@gmail.com
-💬 [Telegram](https://t.me/Otakuosenpai)
-📘 [Facebook](https://facebook.com/salmandevapp)
-📱 [WhatsApp](https://wa.me/8801840933137)
-🐙 [GitHub](https://github.com/salman-dev-app)
-
-━━━━━━━━━━━━━━━━━━━━━━
-_© 2024-2026 Md Salman Biswas. Alle Rechte vorbehalten._`,
-      ping: "🏓 Pong! Latenz: {latency}ms",
-      jsonValid: "✅ *Gültiges JSON*\n\n```json\n{formatted}\n```",
-      jsonInvalid: "❌ *Ungültiges JSON*\n\nFehler: {error}",
-      uuidGenerated: "🔑 *UUID Generiert*\n\n`{uuid}`",
-      hashGenerated: "🔐 *SHA-256 Hash*\n\nEingabe: `{input}`\nHash: `{hash}`",
-      encodedResult: "🔤 *Base64 Kodiert*\n\nEingabe: `{input}`\nAusgabe: `{output}`",
-      decodedResult: "🔤 *Base64 Dekodiert*\n\nEingabe: `{input}`\nAusgabe: `{output}`",
-      regexMatch: "✅ *Regex Treffer*\n\nMuster: `{pattern}`\nTreffer: {matches}",
-      regexNoMatch: "❌ *Kein Regex Treffer*\n\nMuster: `{pattern}`",
-      regexError: "❌ *Ungültiges Regex Muster*\n\nFehler: {error}",
-      timestampResult: "🕐 *Zeitstempel Konvertierung*\n\nUnix: `{unix}`\nUTC: `{utc}`",
-      colorResult: "🎨 *Farb-Konvertierung*\n\nEingabe: `{input}`\nHEX: `{hex}`\nRGB: `{rgb}`",
-      colorInvalid: "❌ Ungültiges Farbformat.",
-      urlEncoded: "🔗 *URL Kodiert*\n\nAusgabe: `{output}`",
-      urlDecoded: "🔗 *URL Dekodiert*\n\nAusgabe: `{output}`",
-      htmlEscaped: "🔒 *HTML Escaped*\n\nAusgabe: `{output}`",
-      snippetNotFound: "❓ Kein Snippet für `{lang}`.",
-      diceRoll: "🎲 Du hast *{result}* gewürfelt (d{sides})",
-      eightBall: "🎱 *{answer}*",
-      pollCreated: "📊 *Umfrage erstellt!*",
-      pollQuestion: "*{question}*",
-      needArgs: "❓ Bitte gib die erforderlichen Argumente an.",
+      welcome: `✨ *𝗪𝗶𝗹𝗹𝗸𝗼𝗺𝗺𝗲𝗻 𝗯𝗲𝗶 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀!* ✨\n\n🤖 𝘿𝙚𝙞𝙣 𝙋𝙧𝙚𝙢𝙞𝙪𝙢 𝙀𝙣𝙩𝙬𝙞𝙘𝙠𝙡𝙚𝙧-𝘼𝙨𝙨𝙞𝙨𝙩𝙚𝙣𝙩\n\n_Drücke die Buttons!_ 👇`,
+      help: `📚 *𝗕𝗲𝗳𝗲𝗵𝗹𝘀ü𝗯𝗲𝗿𝘀𝗶𝗰𝗵𝘁*\n\n🛡️ /warn /ban /mute\n🛠️ /json /hash /uuid\n🎉 /joke /quote /dice\nℹ️ /stats /about /lang`,
+      unknownCommand: "❓ Unbekannter Befehl.", noPermission: "🚫 Zugriff verweigert.", userNotFound: "❓ Benutzer nicht gefunden.",
+      warnSuccess: "⚠️ *{user}* verwarnt `{count}/3`\n📝 _{reason}_", warnBan: "🔨 *{user}* gebannt nach {count} Verwarnungen.",
+      banSuccess: "🔨 *{user}* gebannt.\n_{reason}_", unbanSuccess: "✅ *{user}* entbannt.", muteSuccess: "🔇 *{user}* — {duration} Min.",
+      unmuteSuccess: "🔊 *{user}* darf wieder sprechen.", spamDetected: "🚨 Spam von *{user}* gelöscht.", spamWarned: "⚠️ *{user}* kein Spam!",
+      warningsCleared: "✅ Verwarnungen für *{user}* gelöscht.", warningsList: "📋 *{user}* — `{count}/3`", noWarnings: "✅ *{user}* — keine Verwarnungen.",
+      langChanged: "✅ Sprache: *{lang}* {flag}", langMenu: "🌍 *Sprache wählen*\nAktuell: *{current}* {flag}",
+      statsTitle: "📊 *𝗦𝘁𝗮𝘁𝗶𝘀𝘁𝗶𝗸*", statsMessages: "Nachrichten: `{count}`", statsCommands: "Befehle: `{count}`",
+      statsSpam: "Spam: `{count}`", statsWarnings: "Verwarnungen: `{count}`", statsBans: "Bans: `{count}`",
+      about: `ℹ️ *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 v3.0*\n👨‍💻 [Md Salman Biswas](https://github.com/salman-dev-app)`,
+      credit: `👨‍💻 *𝙈𝙙 𝙎𝙖𝙡𝙢𝙖𝙣 𝘽𝙞𝙨𝙬𝙖𝙨*\n🎯 Senior Software Engineer\n🐙 [GitHub](https://github.com/salman-dev-app)`,
+      ping: "🏓 *𝙋𝙤𝙣𝙜!* `{latency}ms`",
+      jsonValid: "✅ *Gültiges JSON*\n```json\n{formatted}\n```", jsonInvalid: "❌ *Ungültiges JSON*\n`{error}`",
+      hashGenerated: "🔐 *SHA-256*\n`{hash}`", encodedResult: "🔤 *Base64*\n`{output}`",
+      decodedResult: "🔤 *Dekodiert*\n`{output}`", regexMatch: "✅ *Treffer!*\n`{pattern}`{matches}",
+      regexNoMatch: "❌ *Kein Treffer*", regexError: "❌ *Regex-Fehler:* `{error}`",
+      colorResult: "🎨 HEX:`{hex}` RGB:`{rgb}`", colorInvalid: "❌ Ungültige Farbe",
+      urlEncoded: "🔗 `{output}`", urlDecoded: "🔗 `{output}`", htmlEscaped: "🔒 `{output}`",
+      snippetNotFound: "❓ Kein Snippet für `{lang}`", diceRoll: "🎲 *{result}* auf d{sides}!",
+      eightBall: "*{answer}*", needArgs: "❓ Argumente fehlen.", uuidGenerated: "🔑 *UUID v4*",
     }
   },
 
+  //  🇧🇷 Portuguese
   pt: {
-    name: 'Português',
+    name: 'ℙ𝕠𝕣𝕥𝕦𝕘𝕦ê𝕤',
     flag: '🇧🇷',
     strings: {
-      welcome: `👋 *Bem-vindo ao 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀!*\n\nSou seu assistente premium focado em desenvolvimento:\n\n🛡️ *Moderação* – Filtro de spam, avisos, bans\n💬 *Chat* – Responder perguntas de dev\n🛠️ *Ferramentas Dev* – Formatar JSON, snippets\n🎉 *Diversão* – Piadas, citações, enquetes\n🌍 *Multi-idioma* – Mudar idioma com /lang\n👨‍💻 *Desenvolvedor* – /credit para conhecer o criador\n\n/help para todos os comandos!`,
-      help: `📚 *Referência de Comandos DevBot*\n\n/warn @user – Avisar usuário\n/ban @user – Banir usuário\n/json – Formatar JSON\n/uuid – Gerar UUID\n/joke – Piada de dev\n/lang – Mudar idioma`,
-      unknownCommand: "❓ Comando desconhecido. Digite /help para comandos disponíveis.",
-      noPermission: "🚫 Sem permissão para usar este comando.",
-      userNotFound: "❓ Usuário não encontrado.",
-      warnSuccess: "⚠️ *{user}* foi avisado. [{count}/3]\n📝 Motivo: {reason}",
-      warnBan: "🔨 *{user}* foi banido após {count} avisos.",
-      banSuccess: "🔨 *{user}* foi banido.\n📝 Motivo: {reason}",
-      unbanSuccess: "✅ *{user}* foi desbanido.",
-      muteSuccess: "🔇 *{user}* foi silenciado por {duration} minutos.",
-      unmuteSuccess: "🔊 *{user}* foi dessilenciado.",
-      spamDetected: "🚨 Spam detectado de *{user}*. Mensagem removida.",
-      spamWarned: "⚠️ *{user}* – Sem spam. Este é seu aviso.",
-      warningsCleared: "✅ Avisos de *{user}* foram limpos.",
-      warningsList: "📋 *{user}* tem {count} aviso(s).",
-      noWarnings: "✅ *{user}* não tem avisos.",
-      langChanged: "✅ Idioma mudado para {lang} {flag}",
-      langMenu: "🌍 *Selecionar Idioma*\n\nAtual: {current} {flag}",
-      statsTitle: "📊 *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 Estatísticas*",
-      statsCommands: "Comandos processados: {count}",
-      statsMessages: "Mensagens analisadas: {count}",
-      statsSpam: "Spam bloqueado: {count}",
-      statsWarnings: "Avisos emitidos: {count}",
-      statsBans: "Usuários banidos: {count}",
-      about: `ℹ️ *Sobre 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*\n\n🤖 Bot Telegram premium para desenvolvedores\n⚡ Cloudflare Workers\n🌍 8 idiomas\n\n👨‍💻 *Criado por:* [Md Salman Biswas](https://github.com/salman-dev-app)\n/credit para ver o perfil completo.`,
-      credit: `👨‍💻 *Crédito do Desenvolvedor — 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*
-
-━━━━━━━━━━━━━━━━━━━━━━
-🏆 *Md Salman Biswas*
-🎯 Engenheiro de Software Sênior
-━━━━━━━━━━━━━━━━━━━━━━
-
-📌 *Especialização:*
-Aplicações empresariais escaláveis, seguras e manuteníveis
-
-🌐 *Contato:*
-📧 mdsalmanhelp@gmail.com
-💬 [Telegram](https://t.me/Otakuosenpai)
-📘 [Facebook](https://facebook.com/salmandevapp)
-📱 [WhatsApp](https://wa.me/8801840933137)
-🐙 [GitHub](https://github.com/salman-dev-app)
-
-━━━━━━━━━━━━━━━━━━━━━━
-_© 2024-2026 Md Salman Biswas. Todos os direitos reservados._`,
-      ping: "🏓 Pong! Latência: {latency}ms",
-      jsonValid: "✅ *JSON Válido*\n\n```json\n{formatted}\n```",
-      jsonInvalid: "❌ *JSON Inválido*\n\nErro: {error}",
-      uuidGenerated: "🔑 *UUID Gerado*\n\n`{uuid}`",
-      hashGenerated: "🔐 *Hash SHA-256*\n\nEntrada: `{input}`\nHash: `{hash}`",
-      encodedResult: "🔤 *Codificado em Base64*\n\nEntrada: `{input}`\nSaída: `{output}`",
-      decodedResult: "🔤 *Decodificado de Base64*\n\nEntrada: `{input}`\nSaída: `{output}`",
-      regexMatch: "✅ *Regex Correspondeu*\n\nPadrão: `{pattern}`\nCorrespondências: {matches}",
-      regexNoMatch: "❌ *Sem Correspondência*\n\nPadrão: `{pattern}`",
-      regexError: "❌ *Padrão Regex Inválido*\n\nErro: {error}",
-      timestampResult: "🕐 *Conversão de Timestamp*\n\nUnix: `{unix}`\nUTC: `{utc}`",
-      colorResult: "🎨 *Conversão de Cor*\n\nEntrada: `{input}`\nHEX: `{hex}`\nRGB: `{rgb}`",
-      colorInvalid: "❌ Formato de cor inválido.",
-      urlEncoded: "🔗 *URL Codificada*\n\nSaída: `{output}`",
-      urlDecoded: "🔗 *URL Decodificada*\n\nSaída: `{output}`",
-      htmlEscaped: "🔒 *HTML Escapado*\n\nSaída: `{output}`",
-      snippetNotFound: "❓ Nenhum snippet para `{lang}`.",
-      diceRoll: "🎲 Você tirou *{result}* (d{sides})",
-      eightBall: "🎱 *{answer}*",
-      pollCreated: "📊 *Enquete criada!*",
-      pollQuestion: "*{question}*",
-      needArgs: "❓ Por favor forneça os argumentos necessários.",
+      welcome: `✨ *𝗕𝗲𝗺-𝘃𝗶𝗻𝗱𝗼 𝗮𝗼 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀!* ✨\n\n_Toque nos botões!_ 👇`,
+      help: `📚 *𝗖𝗼𝗺𝗮𝗻𝗱𝗼𝘀*\n🛡️ /warn /ban /mute\n🛠️ /json /hash /uuid\n🎉 /joke /dice /8ball`,
+      unknownCommand: "❓ Comando desconhecido.", noPermission: "🚫 Acesso negado.", userNotFound: "❓ Usuário não encontrado.",
+      warnSuccess: "⚠️ *{user}* avisado `{count}/3`", warnBan: "🔨 *{user}* banido.", banSuccess: "🔨 *{user}* banido.\n_{reason}_",
+      unbanSuccess: "✅ *{user}* desbanido.", muteSuccess: "🔇 *{user}* — {duration} min.", unmuteSuccess: "🔊 *{user}* pode falar.",
+      spamDetected: "🚨 Spam de *{user}* removido.", spamWarned: "⚠️ *{user}* não faça spam!", warningsCleared: "✅ Avisos limpos para *{user}*.",
+      warningsList: "📋 *{user}* — `{count}/3`", noWarnings: "✅ *{user}* — sem avisos.", langChanged: "✅ Idioma: *{lang}* {flag}",
+      langMenu: "🌍 *Idioma*\nAtual: *{current}* {flag}", statsTitle: "📊 *𝗘𝘀𝘁𝗮𝘁í𝘀𝘁𝗶𝗰𝗮𝘀*",
+      statsMessages: "Mensagens: `{count}`", statsCommands: "Comandos: `{count}`", statsSpam: "Spam: `{count}`",
+      statsWarnings: "Avisos: `{count}`", statsBans: "Bans: `{count}`",
+      about: `ℹ️ *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 v3.0*\n👨‍💻 [Md Salman Biswas](https://github.com/salman-dev-app)`,
+      credit: `👨‍💻 *𝙈𝙙 𝙎𝙖𝙡𝙢𝙖𝙣 𝘽𝙞𝙨𝙬𝙖𝙨*\n🎯 Engenheiro de Software Sênior`,
+      ping: "🏓 *𝙋𝙤𝙣𝙜!* `{latency}ms`",
+      jsonValid: "✅ *JSON Válido*\n```json\n{formatted}\n```", jsonInvalid: "❌ `{error}`",
+      hashGenerated: "🔐 `{hash}`", encodedResult: "🔤 `{output}`", decodedResult: "🔤 `{output}`",
+      regexMatch: "✅ `{pattern}`{matches}", regexNoMatch: "❌ *Sem correspondência*", regexError: "❌ `{error}`",
+      colorResult: "🎨 HEX:`{hex}` RGB:`{rgb}`", colorInvalid: "❌ Cor inválida",
+      urlEncoded: "🔗 `{output}`", urlDecoded: "🔗 `{output}`", htmlEscaped: "🔒 `{output}`",
+      snippetNotFound: "❓ Nenhum snippet para `{lang}`", diceRoll: "🎲 *{result}* em d{sides}!",
+      eightBall: "*{answer}*", needArgs: "❓ Argumentos necessários.", uuidGenerated: "🔑 *UUID v4*",
     }
   },
 
+  //  🇷🇺 Russian
   ru: {
-    name: 'Русский',
+    name: '𝐑𝐮𝐬𝐬𝐤𝐢𝐲',
     flag: '🇷🇺',
     strings: {
-      welcome: `👋 *Добро пожаловать в 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀!*\n\nЯ ваш премиум-помощник для разработчиков:\n\n🛡️ *Модерация* – Фильтр спама, предупреждения, баны\n💬 *Чат* – Отвечаю на вопросы по разработке\n🛠️ *Dev-инструменты* – Форматирование JSON, сниппеты\n🎉 *Развлечения* – Шутки, цитаты, опросы\n🌍 *Мультиязычность* – Смена языка через /lang\n👨‍💻 *Разработчик* – /credit чтобы познакомиться с создателем\n\n/help для всех команд!`,
-      help: `📚 *Команды DevBot*\n\n/warn @user – Предупредить\n/ban @user – Забанить\n/json – Форматировать JSON\n/uuid – Генерировать UUID\n/joke – Шутка разработчика\n/lang – Сменить язык`,
-      unknownCommand: "❓ Неизвестная команда. /help для списка команд.",
-      noPermission: "🚫 Нет прав для использования этой команды.",
-      userNotFound: "❓ Пользователь не найден.",
-      warnSuccess: "⚠️ *{user}* получил предупреждение. [{count}/3]\n📝 Причина: {reason}",
-      warnBan: "🔨 *{user}* автоматически забанен после {count} предупреждений.",
-      banSuccess: "🔨 *{user}* забанен.\n📝 Причина: {reason}",
-      unbanSuccess: "✅ *{user}* разбанен.",
-      muteSuccess: "🔇 *{user}* замолчен на {duration} минут.",
-      unmuteSuccess: "🔊 *{user}* размолчен.",
-      spamDetected: "🚨 Спам от *{user}* обнаружен. Сообщение удалено.",
-      spamWarned: "⚠️ *{user}* – Не спамьте. Это ваше предупреждение.",
-      warningsCleared: "✅ Предупреждения *{user}* очищены.",
-      warningsList: "📋 У *{user}* {count} предупреждений.",
-      noWarnings: "✅ У *{user}* нет предупреждений.",
-      langChanged: "✅ Язык изменён на {lang} {flag}",
-      langMenu: "🌍 *Выбор языка*\n\nТекущий: {current} {flag}",
-      statsTitle: "📊 *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 Статистика*",
-      statsCommands: "Обработано команд: {count}",
-      statsMessages: "Проанализировано сообщений: {count}",
-      statsSpam: "Заблокировано спама: {count}",
-      statsWarnings: "Выдано предупреждений: {count}",
-      statsBans: "Забанено пользователей: {count}",
-      about: `ℹ️ *О 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*\n\n🤖 Премиум Telegram бот для разработчиков\n⚡ Cloudflare Workers\n🌍 8 языков\n\n👨‍💻 *Создан:* [Md Salman Biswas](https://github.com/salman-dev-app)\n/credit для полного профиля.`,
-      credit: `👨‍💻 *Кредиты — 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*
-
-━━━━━━━━━━━━━━━━━━━━━━
-🏆 *Md Salman Biswas*
-🎯 Старший инженер-программист
-━━━━━━━━━━━━━━━━━━━━━━
-
-📌 *Специализация:*
-Масштабируемые, безопасные и поддерживаемые корпоративные приложения
-
-🌐 *Контакты:*
-📧 mdsalmanhelp@gmail.com
-💬 [Telegram](https://t.me/Otakuosenpai)
-📘 [Facebook](https://facebook.com/salmandevapp)
-📱 [WhatsApp](https://wa.me/8801840933137)
-🐙 [GitHub](https://github.com/salman-dev-app)
-
-━━━━━━━━━━━━━━━━━━━━━━
-_© 2024-2026 Md Salman Biswas. Все права защищены._`,
-      ping: "🏓 Понг! Задержка: {latency}мс",
-      jsonValid: "✅ *Корректный JSON*\n\n```json\n{formatted}\n```",
-      jsonInvalid: "❌ *Некорректный JSON*\n\nОшибка: {error}",
-      uuidGenerated: "🔑 *Сгенерирован UUID*\n\n`{uuid}`",
-      hashGenerated: "🔐 *SHA-256 Хэш*\n\nВход: `{input}`\nХэш: `{hash}`",
-      encodedResult: "🔤 *Кодировано в Base64*\n\nВход: `{input}`\nВыход: `{output}`",
-      decodedResult: "🔤 *Декодировано из Base64*\n\nВход: `{input}`\nВыход: `{output}`",
-      regexMatch: "✅ *Совпадение Regex*\n\nПаттерн: `{pattern}`\nСовпадения: {matches}",
-      regexNoMatch: "❌ *Нет совпадений Regex*\n\nПаттерн: `{pattern}`",
-      regexError: "❌ *Неверный паттерн Regex*\n\nОшибка: {error}",
-      timestampResult: "🕐 *Конвертация времени*\n\nUnix: `{unix}`\nUTC: `{utc}`",
-      colorResult: "🎨 *Конвертация цвета*\n\nВход: `{input}`\nHEX: `{hex}`\nRGB: `{rgb}`",
-      colorInvalid: "❌ Неверный формат цвета.",
-      urlEncoded: "🔗 *URL Закодирован*\n\nВыход: `{output}`",
-      urlDecoded: "🔗 *URL Декодирован*\n\nВыход: `{output}`",
-      htmlEscaped: "🔒 *HTML Экранирован*\n\nВыход: `{output}`",
-      snippetNotFound: "❓ Нет сниппета для `{lang}`.",
-      diceRoll: "🎲 Вы бросили *{result}* (d{sides})",
-      eightBall: "🎱 *{answer}*",
-      pollCreated: "📊 *Опрос создан!*",
-      pollQuestion: "*{question}*",
-      needArgs: "❓ Пожалуйста, укажите необходимые аргументы.",
+      welcome: `✨ *𝗗𝗼𝗯𝗿𝗼 𝗽𝗼𝘇𝗵𝗮𝗹𝗼𝘃𝗮𝘁' 𝘃 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀!* ✨\n\n🤖 Ваш премиум ассистент разработчика\n\n_Нажмите кнопки!_ 👇`,
+      help: `📚 *Команды*\n🛡️ /warn /ban /mute\n🛠️ /json /hash /uuid\n🎉 /joke /dice /8ball`,
+      unknownCommand: "❓ Неизвестная команда.", noPermission: "🚫 Доступ запрещён.", userNotFound: "❓ Пользователь не найден.",
+      warnSuccess: "⚠️ *{user}* предупреждён `{count}/3`", warnBan: "🔨 *{user}* забанен после {count} предупреждений.",
+      banSuccess: "🔨 *{user}* забанен.\n_{reason}_", unbanSuccess: "✅ *{user}* разбанен.", muteSuccess: "🔇 *{user}* — {duration} мин.",
+      unmuteSuccess: "🔊 *{user}* может говорить.", spamDetected: "🚨 Спам от *{user}* удалён.", spamWarned: "⚠️ *{user}* не спамьте!",
+      warningsCleared: "✅ Предупреждения *{user}* сброшены.", warningsList: "📋 *{user}* — `{count}/3`", noWarnings: "✅ *{user}* — нет предупреждений.",
+      langChanged: "✅ Язык: *{lang}* {flag}", langMenu: "🌍 *Выбор языка*\nТекущий: *{current}* {flag}",
+      statsTitle: "📊 *Статистика*", statsMessages: "Сообщений: `{count}`", statsCommands: "Команд: `{count}`",
+      statsSpam: "Спам: `{count}`", statsWarnings: "Предупреждений: `{count}`", statsBans: "Банов: `{count}`",
+      about: `ℹ️ *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 v3.0*\n👨‍💻 [Md Salman Biswas](https://github.com/salman-dev-app)`,
+      credit: `👨‍💻 *Md Salman Biswas*\n🎯 Старший инженер-программист`,
+      ping: "🏓 *Понг!* `{latency}ms`",
+      jsonValid: "✅ *JSON корректен*\n```json\n{formatted}\n```", jsonInvalid: "❌ `{error}`",
+      hashGenerated: "🔐 `{hash}`", encodedResult: "🔤 `{output}`", decodedResult: "🔤 `{output}`",
+      regexMatch: "✅ `{pattern}`{matches}", regexNoMatch: "❌ *Совпадений нет*", regexError: "❌ `{error}`",
+      colorResult: "🎨 HEX:`{hex}` RGB:`{rgb}`", colorInvalid: "❌ Неверный формат цвета",
+      urlEncoded: "🔗 `{output}`", urlDecoded: "🔗 `{output}`", htmlEscaped: "🔒 `{output}`",
+      snippetNotFound: "❓ Сниппет не найден: `{lang}`", diceRoll: "🎲 *{result}* на d{sides}!",
+      eightBall: "*{answer}*", needArgs: "❓ Нужны аргументы.", uuidGenerated: "🔑 *UUID v4*",
     }
   },
 
+  //  🇨🇳 Chinese
   zh: {
     name: '中文',
     flag: '🇨🇳',
     strings: {
-      welcome: `👋 *欢迎使用 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀！*\n\n我是您的高级开发者专属助手：\n\n🛡️ *管理* – 垃圾信息过滤、警告、封禁\n💬 *聊天* – 回答开发相关问题\n🛠️ *开发工具* – JSON 格式化、代码片段等\n🎉 *娱乐* – 笑话、名言、投票\n🌍 *多语言* – 使用 /lang 切换语言\n👨‍💻 *开发者* – /credit 了解创作者\n\n输入 /help 查看所有命令！`,
-      help: `📚 *DevBot 命令参考*\n\n/warn @user – 警告用户\n/ban @user – 封禁用户\n/json – 格式化 JSON\n/uuid – 生成 UUID\n/joke – 开发者笑话\n/lang – 切换语言`,
-      unknownCommand: "❓ 未知命令。输入 /help 查看可用命令。",
-      noPermission: "🚫 您没有权限使用此命令。",
-      userNotFound: "❓ 未找到用户。",
-      warnSuccess: "⚠️ *{user}* 已被警告。[{count}/3]\n📝 原因：{reason}",
-      warnBan: "🔨 *{user}* 在 {count} 次警告后被自动封禁。",
-      banSuccess: "🔨 *{user}* 已被封禁。\n📝 原因：{reason}",
-      unbanSuccess: "✅ *{user}* 已被解封。",
-      muteSuccess: "🔇 *{user}* 已被禁言 {duration} 分钟。",
-      unmuteSuccess: "🔊 *{user}* 已被解除禁言。",
-      spamDetected: "🚨 检测到 *{user}* 发送垃圾信息。消息已删除。",
-      spamWarned: "⚠️ *{user}* – 请勿发送垃圾信息。这是您的警告。",
-      warningsCleared: "✅ *{user}* 的警告已清除。",
-      warningsList: "📋 *{user}* 有 {count} 条警告。",
-      noWarnings: "✅ *{user}* 没有警告。",
-      langChanged: "✅ 语言已更改为 {lang} {flag}",
-      langMenu: "🌍 *选择语言*\n\n当前：{current} {flag}",
-      statsTitle: "📊 *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 统计*",
-      statsCommands: "处理的命令：{count}",
-      statsMessages: "分析的消息：{count}",
-      statsSpam: "拦截的垃圾信息：{count}",
-      statsWarnings: "发出的警告：{count}",
-      statsBans: "封禁的用户：{count}",
-      about: `ℹ️ *关于 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*\n\n🤖 面向开发者的高级 Telegram 机器人\n⚡ 由 Cloudflare Workers 驱动\n🌍 支持8种语言\n\n👨‍💻 *开发者:* [Md Salman Biswas](https://github.com/salman-dev-app)\n输入 /credit 查看完整个人资料。`,
-      credit: `👨‍💻 *开发者信息 — 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*
-
-━━━━━━━━━━━━━━━━━━━━━━
-🏆 *Md Salman Biswas*
-🎯 高级软件工程师
-━━━━━━━━━━━━━━━━━━━━━━
-
-📌 *专业方向:*
-构建高度可扩展、安全且可维护的企业级应用
-
-🌐 *联系方式:*
-📧 mdsalmanhelp@gmail.com
-💬 [Telegram](https://t.me/Otakuosenpai)
-📘 [Facebook](https://facebook.com/salmandevapp)
-📱 [WhatsApp](https://wa.me/8801840933137)
-🐙 [GitHub](https://github.com/salman-dev-app)
-
-━━━━━━━━━━━━━━━━━━━━━━
-_© 2024-2026 Md Salman Biswas. 版权所有。_`,
-      ping: "🏓 Pong！延迟：{latency}ms",
-      jsonValid: "✅ *有效 JSON*\n\n```json\n{formatted}\n```",
-      jsonInvalid: "❌ *无效 JSON*\n\n错误：{error}",
-      uuidGenerated: "🔑 *生成的 UUID*\n\n`{uuid}`",
-      hashGenerated: "🔐 *SHA-256 哈希*\n\n输入：`{input}`\n哈希：`{hash}`",
-      encodedResult: "🔤 *Base64 编码*\n\n输入：`{input}`\n输出：`{output}`",
-      decodedResult: "🔤 *Base64 解码*\n\n输入：`{input}`\n输出：`{output}`",
-      regexMatch: "✅ *正则匹配*\n\n模式：`{pattern}`\n匹配：{matches}",
-      regexNoMatch: "❌ *无正则匹配*\n\n模式：`{pattern}`",
-      regexError: "❌ *无效正则模式*\n\n错误：{error}",
-      timestampResult: "🕐 *时间戳转换*\n\nUnix：`{unix}`\nUTC：`{utc}`",
-      colorResult: "🎨 *颜色转换*\n\n输入：`{input}`\nHEX：`{hex}`\nRGB：`{rgb}`",
-      colorInvalid: "❌ 无效颜色格式。",
-      urlEncoded: "🔗 *URL 编码*\n\n输出：`{output}`",
-      urlDecoded: "🔗 *URL 解码*\n\n输出：`{output}`",
-      htmlEscaped: "🔒 *HTML 转义*\n\n输出：`{output}`",
-      snippetNotFound: "❓ 没有 `{lang}` 的代码片段。",
-      diceRoll: "🎲 您投出了 *{result}*（d{sides}）",
-      eightBall: "🎱 *{answer}*",
-      pollCreated: "📊 *投票已创建！*",
-      pollQuestion: "*{question}*",
-      needArgs: "❓ 请提供必要参数。",
+      welcome: `✨ *欢迎使用 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀！* ✨\n\n🤖 您的高级开发者助手\n\n_点击下面的按钮！_ 👇`,
+      help: `📚 *命令列表*\n🛡️ /warn /ban /mute\n🛠️ /json /hash /uuid\n🎉 /joke /dice /8ball`,
+      unknownCommand: "❓ 未知命令。", noPermission: "🚫 权限不足。", userNotFound: "❓ 未找到用户。",
+      warnSuccess: "⚠️ *{user}* 已警告 `{count}/3`", warnBan: "🔨 *{user}* 已封禁。", banSuccess: "🔨 *{user}* 已封禁。",
+      unbanSuccess: "✅ *{user}* 已解封。", muteSuccess: "🔇 *{user}* 已禁言 {duration} 分钟。", unmuteSuccess: "🔊 *{user}* 已解除禁言。",
+      spamDetected: "🚨 检测到 *{user}* 的垃圾信息！", spamWarned: "⚠️ *{user}* 请勿发垃圾信息！",
+      warningsCleared: "✅ *{user}* 的警告已清除。", warningsList: "📋 *{user}* — `{count}/3` 次警告", noWarnings: "✅ *{user}* 无警告记录。",
+      langChanged: "✅ 语言：*{lang}* {flag}", langMenu: "🌍 *选择语言*\n当前：*{current}* {flag}",
+      statsTitle: "📊 *统计数据*", statsMessages: "消息：`{count}`", statsCommands: "命令：`{count}`",
+      statsSpam: "垃圾信息：`{count}`", statsWarnings: "警告：`{count}`", statsBans: "封禁：`{count}`",
+      about: `ℹ️ *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 v3.0*\n👨‍💻 [Md Salman Biswas](https://github.com/salman-dev-app)`,
+      credit: `👨‍💻 *Md Salman Biswas*\n🎯 高级软件工程师`,
+      ping: "🏓 *延迟!* `{latency}ms`",
+      jsonValid: "✅ *JSON 有效*\n```json\n{formatted}\n```", jsonInvalid: "❌ `{error}`",
+      hashGenerated: "🔐 `{hash}`", encodedResult: "🔤 `{output}`", decodedResult: "🔤 `{output}`",
+      regexMatch: "✅ `{pattern}`{matches}", regexNoMatch: "❌ *无匹配*", regexError: "❌ `{error}`",
+      colorResult: "🎨 HEX:`{hex}` RGB:`{rgb}`", colorInvalid: "❌ 颜色格式无效",
+      urlEncoded: "🔗 `{output}`", urlDecoded: "🔗 `{output}`", htmlEscaped: "🔒 `{output}`",
+      snippetNotFound: "❓ 未找到 `{lang}` 的代码片段", diceRoll: "🎲 *{result}*（d{sides}）！",
+      eightBall: "*{answer}*", needArgs: "❓ 请提供必要参数。", uuidGenerated: "🔑 *UUID v4*",
     }
   },
 
+  //  🇸🇦 Arabic
   ar: {
     name: 'العربية',
     flag: '🇸🇦',
     strings: {
-      welcome: `👋 *مرحباً بك في 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀!*\n\nأنا مساعدك المتميز للمطورين:\n\n🛡️ *الإشراف* – تصفية الرسائل المزعجة، التحذيرات، الحظر\n💬 *محادثة* – الإجابة على أسئلة التطوير\n🛠️ *أدوات المطور* – تنسيق JSON، مقاطع الكود\n🎉 *متعة* – نكات، اقتباسات، استطلاعات\n🌍 *متعدد اللغات* – تغيير اللغة بـ /lang\n👨‍💻 *المطور* – /credit للتعرف على المنشئ\n\nاكتب /help لرؤية جميع الأوامر!`,
-      help: `📚 *مرجع أوامر DevBot*\n\n/warn @user – تحذير مستخدم\n/ban @user – حظر مستخدم\n/json – تنسيق JSON\n/uuid – إنشاء UUID\n/joke – نكتة مطور\n/lang – تغيير اللغة`,
-      unknownCommand: "❓ أمر غير معروف. اكتب /help لرؤية الأوامر المتاحة.",
-      noPermission: "🚫 ليس لديك صلاحية لاستخدام هذا الأمر.",
-      userNotFound: "❓ المستخدم غير موجود.",
-      warnSuccess: "⚠️ تم تحذير *{user}*. [{count}/3]\n📝 السبب: {reason}",
-      warnBan: "🔨 تم حظر *{user}* تلقائياً بعد {count} تحذيرات.",
-      banSuccess: "🔨 تم حظر *{user}*.\n📝 السبب: {reason}",
-      unbanSuccess: "✅ تم رفع حظر *{user}*.",
-      muteSuccess: "🔇 تم كتم *{user}* لمدة {duration} دقائق.",
-      unmuteSuccess: "🔊 تم رفع كتم *{user}*.",
-      spamDetected: "🚨 تم اكتشاف رسائل مزعجة من *{user}*. تم حذف الرسالة.",
-      spamWarned: "⚠️ *{user}* – لا ترسل رسائل مزعجة. هذا تحذيرك.",
-      warningsCleared: "✅ تم مسح تحذيرات *{user}*.",
-      warningsList: "📋 لدى *{user}* {count} تحذير(ات).",
-      noWarnings: "✅ لا توجد تحذيرات لـ *{user}*.",
-      langChanged: "✅ تم تغيير اللغة إلى {lang} {flag}",
-      langMenu: "🌍 *اختر لغة*\n\nالحالية: {current} {flag}",
-      statsTitle: "📊 *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 إحصائيات*",
-      statsCommands: "الأوامر المعالجة: {count}",
-      statsMessages: "الرسائل المحللة: {count}",
-      statsSpam: "الرسائل المزعجة المحظورة: {count}",
-      statsWarnings: "التحذيرات الصادرة: {count}",
-      statsBans: "المستخدمون المحظورون: {count}",
-      about: `ℹ️ *حول 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*\n\n🤖 بوت تيليجرام متميز للمطورين\n⚡ مدعوم بـ Cloudflare Workers\n🌍 8 لغات\n\n👨‍💻 *المطور:* [Md Salman Biswas](https://github.com/salman-dev-app)\nاكتب /credit لرؤية الملف الكامل.`,
-      credit: `👨‍💻 *تقدير المطور — 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*
-
-━━━━━━━━━━━━━━━━━━━━━━
-🏆 *Md Salman Biswas*
-🎯 مهندس برمجيات أول
-━━━━━━━━━━━━━━━━━━━━━━
-
-📌 *التخصص:*
-بناء تطبيقات مؤسسية قابلة للتوسع وآمنة وقابلة للصيانة
-
-🌐 *التواصل:*
-📧 mdsalmanhelp@gmail.com
-💬 [Telegram](https://t.me/Otakuosenpai)
-📘 [Facebook](https://facebook.com/salmandevapp)
-📱 [WhatsApp](https://wa.me/8801840933137)
-🐙 [GitHub](https://github.com/salman-dev-app)
-
-━━━━━━━━━━━━━━━━━━━━━━
-_© 2024-2026 Md Salman Biswas. جميع الحقوق محفوظة._`,
-      ping: "🏓 Pong! الكمون: {latency}ms",
-      jsonValid: "✅ *JSON صالح*\n\n```json\n{formatted}\n```",
-      jsonInvalid: "❌ *JSON غير صالح*\n\nخطأ: {error}",
-      uuidGenerated: "🔑 *UUID مُنشأ*\n\n`{uuid}`",
-      hashGenerated: "🔐 *SHA-256 هاش*\n\nالإدخال: `{input}`\nالهاش: `{hash}`",
-      encodedResult: "🔤 *مُشفر بـ Base64*\n\nالإدخال: `{input}`\nالإخراج: `{output}`",
-      decodedResult: "🔤 *مفكوك من Base64*\n\nالإدخال: `{input}`\nالإخراج: `{output}`",
-      regexMatch: "✅ *تطابق Regex*\n\nالنمط: `{pattern}`\nالتطابقات: {matches}",
-      regexNoMatch: "❌ *لا تطابق Regex*\n\nالنمط: `{pattern}`",
-      regexError: "❌ *نمط Regex غير صالح*\n\nخطأ: {error}",
-      timestampResult: "🕐 *تحويل الطابع الزمني*\n\nUnix: `{unix}`\nUTC: `{utc}`",
-      colorResult: "🎨 *تحويل اللون*\n\nالإدخال: `{input}`\nHEX: `{hex}`\nRGB: `{rgb}`",
-      colorInvalid: "❌ تنسيق لون غير صالح.",
-      urlEncoded: "🔗 *URL مُشفر*\n\nالإخراج: `{output}`",
-      urlDecoded: "🔗 *URL مفكوك*\n\nالإخراج: `{output}`",
-      htmlEscaped: "🔒 *HTML مُهرَّب*\n\nالإخراج: `{output}`",
-      snippetNotFound: "❓ لا يوجد مقطع كود لـ `{lang}`.",
-      diceRoll: "🎲 رمي *{result}* (d{sides})",
-      eightBall: "🎱 *{answer}*",
-      pollCreated: "📊 *تم إنشاء الاستطلاع!*",
-      pollQuestion: "*{question}*",
-      needArgs: "❓ يرجى توفير الوسائط المطلوبة.",
+      welcome: `✨ *مرحباً في 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀!* ✨\n\n🤖 مساعدك المطوّر المميّز\n\n_اضغط على الأزرار!_ 👇`,
+      help: `📚 *الأوامر*\n🛡️ /warn /ban /mute\n🛠️ /json /hash /uuid\n🎉 /joke /dice /8ball`,
+      unknownCommand: "❓ أمر غير معروف.", noPermission: "🚫 لا يوجد صلاحية.", userNotFound: "❓ المستخدم غير موجود.",
+      warnSuccess: "⚠️ *{user}* تحذير `{count}/3`", warnBan: "🔨 تم حظر *{user}*.", banSuccess: "🔨 تم حظر *{user}*.",
+      unbanSuccess: "✅ تم رفع الحظر عن *{user}*.", muteSuccess: "🔇 *{user}* — {duration} دقيقة.", unmuteSuccess: "🔊 *{user}* يمكنه الكلام.",
+      spamDetected: "🚨 رسائل مزعجة من *{user}*!", spamWarned: "⚠️ *{user}* لا ترسل رسائل مزعجة!",
+      warningsCleared: "✅ تم مسح تحذيرات *{user}*.", warningsList: "📋 *{user}* — `{count}/3`", noWarnings: "✅ لا توجد تحذيرات.",
+      langChanged: "✅ اللغة: *{lang}* {flag}", langMenu: "🌍 *اختر اللغة*\nالحالية: *{current}* {flag}",
+      statsTitle: "📊 *الإحصائيات*", statsMessages: "الرسائل: `{count}`", statsCommands: "الأوامر: `{count}`",
+      statsSpam: "المزعجة: `{count}`", statsWarnings: "التحذيرات: `{count}`", statsBans: "الحظر: `{count}`",
+      about: `ℹ️ *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 v3.0*`,
+      credit: `👨‍💻 *Md Salman Biswas*\n🎯 مهندس برمجيات أول`,
+      ping: "🏓 *بونج!* `{latency}ms`",
+      jsonValid: "✅ *JSON صحيح*\n```json\n{formatted}\n```", jsonInvalid: "❌ `{error}`",
+      hashGenerated: "🔐 `{hash}`", encodedResult: "🔤 `{output}`", decodedResult: "🔤 `{output}`",
+      regexMatch: "✅ `{pattern}`{matches}", regexNoMatch: "❌ *لا توجد نتيجة*", regexError: "❌ `{error}`",
+      colorResult: "🎨 HEX:`{hex}` RGB:`{rgb}`", colorInvalid: "❌ تنسيق لون غير صالح",
+      urlEncoded: "🔗 `{output}`", urlDecoded: "🔗 `{output}`", htmlEscaped: "🔒 `{output}`",
+      snippetNotFound: "❓ لا يوجد snippet لـ `{lang}`", diceRoll: "🎲 *{result}* على d{sides}!",
+      eightBall: "*{answer}*", needArgs: "❓ المعطيات مطلوبة.", uuidGenerated: "🔑 *UUID v4*",
     }
-  }
+  },
+
+  //  🇮🇳 Hindi
+  hi: {
+    name: 'हिन्दी',
+    flag: '🇮🇳',
+    strings: {
+      welcome: `✨ *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 में आपका स्वागत है!* ✨\n\n🤖 आपका प्रीमियम डेवलपर असिस्टेंट\n\n🛡️ स्मार्ट मॉडरेशन\n🛠️ डेवलपर टूल्स\n🎉 मज़ा और गेम्स\n🌍 १० भाषाएं\n🔐 पासवर्ड जेनरेटर\n\n_नीचे बटन दबाएं!_ 👇`,
+      help: `📚 *कमांड सूची — 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*\n\n🛡️ *मॉडरेशन*\n/warn /ban /unban /mute /unmute\n\n🛠️ *डेव टूल्स*\n/json /encode /decode /hash /uuid\n/regex /snippet /color /calc\n\n🎉 *मनोरंजन*\n/joke /quote /poll /8ball /dice\n\nℹ️ *जानकारी*\n/stats /about /credit /ping /lang`,
+      unknownCommand: "❓ *अज्ञात कमांड।* /help टाइप करें।",
+      noPermission: "🚫 *अनुमति नहीं है!* केवल एडमिन ही यह कर सकते हैं।",
+      userNotFound: "❓ *यूज़र नहीं मिला।* @username दें या मैसेज रिप्लाई करें।",
+      warnSuccess: "⚠️ *चेतावनी दी गई!*\n\n👤 यूज़र: *{user}*\n📊 गिनती: `{count}/3`\n📝 कारण: _{reason}_",
+      warnBan: "🔨 *ऑटो-बैन!*\n\n👤 *{user}* को {count} चेतावनियों के बाद बैन किया गया!",
+      banSuccess: "🔨 *बैन किया गया!*\n\n👤 *{user}*\n📝 _{reason}_",
+      unbanSuccess: "✅ *अनबैन!*\n\n👤 *{user}* को अनबैन कर दिया गया।",
+      muteSuccess: "🔇 *म्यूट किया गया!*\n\n👤 *{user}*\n⏱️ {duration} मिनट के लिए",
+      unmuteSuccess: "🔊 *अनम्यूट!*\n\n👤 *{user}* अब बोल सकते हैं।",
+      spamDetected: "🚨 *स्पैम पकड़ा!*\n👤 *{user}* — मैसेज हटाया गया।",
+      spamWarned: "⚠️ *{user}* — स्पैम मत करो! यह आपकी चेतावनी है।",
+      warningsCleared: "✅ *साफ़!*\n\n👤 *{user}* की सभी चेतावनियां हटाई गईं।",
+      warningsList: "📋 *चेतावनी*\n\n👤 *{user}* — `{count}/3`",
+      noWarnings: "✅ *{user}* — कोई चेतावनी नहीं।",
+      langChanged: "✅ *भाषा बदली!*\n\nअब: *{lang}* {flag}",
+      langMenu: "🌍 *भाषा चुनें*\n\n📍 वर्तमान: *{current}* {flag}\n\n_बटन दबाएं:_",
+      statsTitle: "📊 *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 — आँकड़े*",
+      statsMessages: "विश्लेषित संदेश: `{count}`",
+      statsCommands: "कमांड चलाए: `{count}`",
+      statsSpam: "स्पैम ब्लॉक: `{count}`",
+      statsWarnings: "चेतावनियां: `{count}`",
+      statsBans: "बैन: `{count}`",
+      about: `🤖 *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 v3.0*\n\n⚡ Cloudflare Workers पर चलता है\n🌍 १० भाषाओं में उपलब्ध\n🛡️ स्मार्ट स्पैम मॉडरेशन\n\n👨‍💻 [Md Salman Biswas](https://github.com/salman-dev-app) द्वारा बनाया गया`,
+      credit: `👨‍💻 *𝙈𝙙 𝙎𝙖𝙡𝙢𝙖𝙣 𝘽𝙞𝙨𝙬𝙖𝙨*\n🎯 वरिष्ठ सॉफ्टवेयर इंजीनियर\n\n🐙 [GitHub](https://github.com/salman-dev-app)\n💬 [Telegram](https://t.me/Otakuosenpai)`,
+      ping: "🏓 *पोंग!*\n⚡ विलंबता: `{latency}ms`",
+      jsonValid: "✅ *JSON सही है*\n\n```json\n{formatted}\n```",
+      jsonInvalid: "❌ *JSON गलत है*\n`{error}`",
+      hashGenerated: "🔐 *SHA-256 हैश*\n`{hash}`",
+      encodedResult: "🔤 *Base64 एन्कोड*\n`{output}`",
+      decodedResult: "🔤 *Base64 डीकोड*\n`{output}`",
+      regexMatch: "✅ *रेगेक्स मिला!*\n`{pattern}`{matches}",
+      regexNoMatch: "❌ *कोई मिलान नहीं*",
+      regexError: "❌ *रेगेक्स त्रुटि:* `{error}`",
+      colorResult: "🎨 HEX:`{hex}` RGB:`{rgb}`",
+      colorInvalid: "❌ *रंग प्रारूप गलत है*",
+      urlEncoded: "🔗 `{output}`", urlDecoded: "🔗 `{output}`", htmlEscaped: "🔒 `{output}`",
+      snippetNotFound: "❓ `{lang}` के लिए कोई स्निपेट नहीं",
+      diceRoll: "🎲 *आपने {result} फेंका* (d{sides})",
+      eightBall: "*{answer}*",
+      needArgs: "❓ *तर्क चाहिए।* /help देखें।",
+      uuidGenerated: "🔑 *UUID v4 बनाया गया*",
+    }
+  },
+
+  //  🇧🇩 Bangla
+  bn: {
+    name: 'বাংলা',
+    flag: '🇧🇩',
+    strings: {
+      welcome: `✨ *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀-এ স্বাগতম!* ✨\n\n🤖 আপনার প্রিমিয়াম ডেভেলপার সহকারী\n\n🛡️ স্মার্ট মডারেশন\n🛠️ ডেভেলপার টুলস\n🎉 মজা ও গেমস\n🌍 ১০টি ভাষা\n🔐 পাসওয়ার্ড জেনারেটর\n\n_নিচের বাটনগুলো চাপুন!_ 👇`,
+      help: `📚 *কমান্ড তালিকা — 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*\n\n🛡️ *মডারেশন*\n/warn /ban /unban /mute /unmute\n\n🛠️ *ডেভ টুলস*\n/json /encode /decode /hash /uuid\n/regex /snippet /color /calc\n\n🎉 *মজা*\n/joke /quote /poll /8ball /dice\n\nℹ️ *তথ্য*\n/stats /about /credit /ping /lang`,
+      unknownCommand: "❓ *অজানা কমান্ড।* /help লিখুন।",
+      noPermission: "🚫 *অনুমতি নেই!* শুধু অ্যাডমিন এটা করতে পারবেন।",
+      userNotFound: "❓ *ইউজার পাওয়া যায়নি।* @username দিন বা মেসেজ রিপ্লাই করুন।",
+      warnSuccess: "⚠️ *সতর্কতা জারি!*\n\n👤 ইউজার: *{user}*\n📊 সংখ্যা: `{count}/3`\n📝 কারণ: _{reason}_",
+      warnBan: "🔨 *অটো-ব্যান!*\n\n👤 *{user}* কে {count}টি সতর্কতার পর ব্যান করা হয়েছে!",
+      banSuccess: "🔨 *ব্যান করা হয়েছে!*\n\n👤 *{user}*\n📝 _{reason}_",
+      unbanSuccess: "✅ *আনব্যান!*\n\n👤 *{user}* কে আনব্যান করা হয়েছে।",
+      muteSuccess: "🔇 *মিউট করা হয়েছে!*\n\n👤 *{user}*\n⏱️ {duration} মিনিটের জন্য",
+      unmuteSuccess: "🔊 *আনমিউট!*\n\n👤 *{user}* এখন কথা বলতে পারবেন।",
+      spamDetected: "🚨 *স্প্যাম ধরা পড়েছে!*\n👤 *{user}* — মেসেজ মুছে দেওয়া হয়েছে।",
+      spamWarned: "⚠️ *{user}* — স্প্যাম করবেন না! এটি আপনার সতর্কতা।",
+      warningsCleared: "✅ *পরিষ্কার!*\n\n👤 *{user}* এর সব সতর্কতা মুছে ফেলা হয়েছে।",
+      warningsList: "📋 *সতর্কতা*\n\n👤 *{user}* — `{count}/3`",
+      noWarnings: "✅ *{user}* — কোনো সতর্কতা নেই।",
+      langChanged: "✅ *ভাষা পরিবর্তিত!*\n\nএখন: *{lang}* {flag}",
+      langMenu: "🌍 *ভাষা নির্বাচন করুন*\n\n📍 বর্তমান: *{current}* {flag}\n\n_বাটন চাপুন:_",
+      statsTitle: "📊 *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 — পরিসংখ্যান*",
+      statsMessages: "বিশ্লেষিত মেসেজ: `{count}`",
+      statsCommands: "কমান্ড চালানো: `{count}`",
+      statsSpam: "স্প্যাম ব্লক: `{count}`",
+      statsWarnings: "সতর্কতা: `{count}`",
+      statsBans: "ব্যান: `{count}`",
+      about: `🤖 *𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀 v3.0*\n\n⚡ Cloudflare Workers-এ চলে\n🌍 ১০টি ভাষায় সমর্থিত\n🛡️ স্মার্ট স্প্যাম মডারেশন\n\n👨‍💻 [Md Salman Biswas](https://github.com/salman-dev-app) দ্বারা তৈরি`,
+      credit: `👨‍💻 *𝙈𝙙 𝙎𝙖𝙡𝙢𝙖𝙣 𝘽𝙞𝙨𝙬𝙖𝙨*\n🎯 সিনিয়র সফটওয়্যার ইঞ্জিনিয়ার\n\n🐙 [GitHub](https://github.com/salman-dev-app)\n💬 [Telegram](https://t.me/Otakuosenpai)`,
+      ping: "🏓 *পং!*\n⚡ লেটেন্সি: `{latency}ms`",
+      jsonValid: "✅ *JSON সঠিক*\n\n```json\n{formatted}\n```",
+      jsonInvalid: "❌ *JSON ভুল*\n`{error}`",
+      hashGenerated: "🔐 *SHA-256 হ্যাশ*\n`{hash}`",
+      encodedResult: "🔤 *Base64 এনকোড*\n`{output}`",
+      decodedResult: "🔤 *Base64 ডিকোড*\n`{output}`",
+      regexMatch: "✅ *রেজেক্স মিলেছে!*\n`{pattern}`{matches}",
+      regexNoMatch: "❌ *কোনো মিল নেই*",
+      regexError: "❌ *রেজেক্স ত্রুটি:* `{error}`",
+      colorResult: "🎨 HEX:`{hex}` RGB:`{rgb}`",
+      colorInvalid: "❌ *রঙের ফরম্যাট ভুল*",
+      urlEncoded: "🔗 `{output}`", urlDecoded: "🔗 `{output}`", htmlEscaped: "🔒 `{output}`",
+      snippetNotFound: "❓ `{lang}` এর জন্য কোনো স্নিপেট নেই",
+      diceRoll: "🎲 *আপনি {result} পেলেন* (d{sides})",
+      eightBall: "*{answer}*",
+      needArgs: "❓ *আর্গুমেন্ট দরকার।* /help দেখুন।",
+      uuidGenerated: "🔑 *UUID v4 তৈরি হয়েছে*",
+    }
+  },
 };
 
-export const DEFAULT_LANG = 'en';
+//  Translation helper
 
-export function getLang(langCode) {
-  return LANGUAGES[langCode] || LANGUAGES[DEFAULT_LANG];
-}
-
-export function t(langCode, key, vars = {}) {
-  const lang = getLang(langCode);
-  let str = lang.strings[key] || LANGUAGES[DEFAULT_LANG].strings[key] || key;
+export function t(lang, key, vars = {}) {
+  const strings = LANGUAGES[lang]?.strings || LANGUAGES.en.strings;
+  let str = strings[key] || LANGUAGES.en.strings[key] || key;
   for (const [k, v] of Object.entries(vars)) {
     str = str.replaceAll(`{${k}}`, v);
   }
   return str;
 }
 
+export function getLang(code) {
+  return LANGUAGES[code] || LANGUAGES.en;
+}
+
 export function getLangList() {
-  return Object.entries(LANGUAGES).map(([code, data]) => ({
+  return Object.entries(LANGUAGES).map(([code, lang]) => ({
     code,
-    name: data.name,
-    flag: data.flag
+    name: lang.name,
+    flag: lang.flag,
   }));
 }

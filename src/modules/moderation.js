@@ -15,7 +15,7 @@ import {
 } from '../utils/state.js';
 import { t, getLang } from '../data/languages.js';
 
-// ── Spam detection patterns ──────────────────────────────────
+//  Spam detection patterns 
 
 const SPAM_PATTERNS = [
   // Crypto/scam promotion
@@ -174,7 +174,7 @@ export async function executeWarn(botToken, state, chatId, userId, userObj, reas
   return { warned: true, banned: false, count };
 }
 
-// ── Command Handlers ─────────────────────────────────────────
+//  Command Handlers 
 
 /**
  * /warn @user [reason]
@@ -369,7 +369,7 @@ export async function handleClearWarns(botToken, state, msg, args, lang) {
   return sendMessage(botToken, chatId, t(lang, 'warningsCleared', { user: userName }));
 }
 
-// ── Helper: Resolve target user from reply or @mention ───────
+//  Helper: Resolve target user from reply or @mention 
 
 async function resolveTarget(botToken, msg, args) {
   // Priority 1: Reply to message
