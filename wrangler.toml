@@ -3,7 +3,7 @@ main = "src/index.js"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
-# ──────────────────────────────────────────────────────────────
+#──────────────────────────────────────────────────────────────
 # Bot: 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀
 # Developer: Md Salman Biswas (github.com/salman-dev-app)
 # Workers free tier limits (per day):
