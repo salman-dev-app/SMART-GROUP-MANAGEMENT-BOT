@@ -165,7 +165,6 @@ Applications d'entreprise évolutives, sécurisées et maintenables
 
 ━━━━━━━━━━━━━━━━━━━━━━
 _© 2024-2026 Md Salman Biswas. Tous droits réservés._`,
-      credit: `👨‍💻 *Crédit Développeur — 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*\n\n🏆 *Md Salman Biswas*\n🎯 Ingénieur Logiciel Senior\n\n🌐 mdsalmanhelp@gmail.com\n💬 [Telegram](https://t.me/Otakuosenpai)\n📘 [Facebook](https://facebook.com/salmandevapp)\n📱 [WhatsApp](https://wa.me/8801840933137)\n🐙 [GitHub](https://github.com/salman-dev-app)\n\n_© 2024-2026 Md Salman Biswas._`,
       ping: "🏓 Pong! Latence: {latency}ms",
       jsonValid: "✅ *JSON Valide*\n\n```json\n{formatted}\n```",
       jsonInvalid: "❌ *JSON Invalide*\n\nErreur: {error}",
@@ -239,7 +238,6 @@ Skalierbare, sichere und wartbare Unternehmensanwendungen
 
 ━━━━━━━━━━━━━━━━━━━━━━
 _© 2024-2026 Md Salman Biswas. Alle Rechte vorbehalten._`,
-      credit: `👨‍💻 *Entwickler-Credits — 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*\n\n🏆 *Md Salman Biswas*\n🎯 Senior Software Engineer\n\n🌐 mdsalmanhelp@gmail.com\n💬 [Telegram](https://t.me/Otakuosenpai)\n📘 [Facebook](https://facebook.com/salmandevapp)\n📱 [WhatsApp](https://wa.me/8801840933137)\n🐙 [GitHub](https://github.com/salman-dev-app)\n\n_© 2024-2026 Md Salman Biswas._`,
       ping: "🏓 Pong! Latenz: {latency}ms",
       jsonValid: "✅ *Gültiges JSON*\n\n```json\n{formatted}\n```",
       jsonInvalid: "❌ *Ungültiges JSON*\n\nFehler: {error}",
@@ -313,7 +311,6 @@ Aplicações empresariais escaláveis, seguras e manuteníveis
 
 ━━━━━━━━━━━━━━━━━━━━━━
 _© 2024-2026 Md Salman Biswas. Todos os direitos reservados._`,
-      credit: `👨‍💻 *Crédito do Desenvolvedor — 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*\n\n🏆 *Md Salman Biswas*\n🎯 Engenheiro de Software Sênior\n\n🌐 mdsalmanhelp@gmail.com\n💬 [Telegram](https://t.me/Otakuosenpai)\n📘 [Facebook](https://facebook.com/salmandevapp)\n📱 [WhatsApp](https://wa.me/8801840933137)\n🐙 [GitHub](https://github.com/salman-dev-app)\n\n_© 2024-2026 Md Salman Biswas._`,
       ping: "🏓 Pong! Latência: {latency}ms",
       jsonValid: "✅ *JSON Válido*\n\n```json\n{formatted}\n```",
       jsonInvalid: "❌ *JSON Inválido*\n\nErro: {error}",
@@ -387,7 +384,6 @@ _© 2024-2026 Md Salman Biswas. Todos os direitos reservados._`,
 
 ━━━━━━━━━━━━━━━━━━━━━━
 _© 2024-2026 Md Salman Biswas. Все права защищены._`,
-      credit: `👨‍💻 *Кредиты — 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*\n\n🏆 *Md Salman Biswas*\n🎯 Старший инженер-программист\n\n🌐 mdsalmanhelp@gmail.com\n💬 [Telegram](https://t.me/Otakuosenpai)\n📘 [Facebook](https://facebook.com/salmandevapp)\n📱 [WhatsApp](https://wa.me/8801840933137)\n🐙 [GitHub](https://github.com/salman-dev-app)\n\n_© 2024-2026 Md Salman Biswas._`,
       ping: "🏓 Понг! Задержка: {latency}мс",
       jsonValid: "✅ *Корректный JSON*\n\n```json\n{formatted}\n```",
       jsonInvalid: "❌ *Некорректный JSON*\n\nОшибка: {error}",
@@ -461,7 +457,6 @@ _© 2024-2026 Md Salman Biswas. Все права защищены._`,
 
 ━━━━━━━━━━━━━━━━━━━━━━
 _© 2024-2026 Md Salman Biswas. 版权所有。_`,
-      credit: `👨‍💻 *开发者信息 — 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*\n\n🏆 *Md Salman Biswas*\n🎯 高级软件工程师\n\n🌐 mdsalmanhelp@gmail.com\n💬 [Telegram](https://t.me/Otakuosenpai)\n📘 [Facebook](https://facebook.com/salmandevapp)\n📱 [WhatsApp](https://wa.me/8801840933137)\n🐙 [GitHub](https://github.com/salman-dev-app)\n\n_© 2024-2026 Md Salman Biswas._`,
       ping: "🏓 Pong！延迟：{latency}ms",
       jsonValid: "✅ *有效 JSON*\n\n```json\n{formatted}\n```",
       jsonInvalid: "❌ *无效 JSON*\n\n错误：{error}",
@@ -535,7 +530,6 @@ _© 2024-2026 Md Salman Biswas. 版权所有。_`,
 
 ━━━━━━━━━━━━━━━━━━━━━━
 _© 2024-2026 Md Salman Biswas. جميع الحقوق محفوظة._`,
-      credit: `👨‍💻 *تقدير المطور — 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀*\n\n🏆 *Md Salman Biswas*\n🎯 مهندس برمجيات أول\n\n🌐 mdsalmanhelp@gmail.com\n💬 [Telegram](https://t.me/Otakuosenpai)\n📘 [Facebook](https://facebook.com/salmandevapp)\n📱 [WhatsApp](https://wa.me/8801840933137)\n🐙 [GitHub](https://github.com/salman-dev-app)\n\n_© 2024-2026 Md Salman Biswas._`,
       ping: "🏓 Pong! الكمون: {latency}ms",
       jsonValid: "✅ *JSON صالح*\n\n```json\n{formatted}\n```",
       jsonInvalid: "❌ *JSON غير صالح*\n\nخطأ: {error}",
