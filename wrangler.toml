@@ -1,33 +1,28 @@
-name = "salman-dev-tools"
+name = "devmind-bot"
 main = "src/index.js"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
-#──────────────────────────────────────────────────────────────
-# Bot: 𝗦𝗮𝗹𝗺𝗮𝗻-𝗗𝗲𝘃 𝗧𝗼𝗼𝗹𝘀
+# DevMind — AI Developer Bot
 # Developer: Md Salman Biswas (github.com/salman-dev-app)
-# Workers free tier limits (per day):
-#   - 100,000 requests
-#   - 10ms CPU time per request
-#   - 128MB memory
-# ──────────────────────────────────────────────────────────────
+# Cloudflare Workers free tier: 100,000 req/day, 10ms CPU/req
+# Workers AI free tier: 10,000 neurons/day
 
 [vars]
-# Bot username (without @) — set after creating bot with BotFather
-BOT_USERNAME = "SalmanDevToolsBot"   # ← replace with your actual bot username
+BOT_USERNAME = "SalmanDevToolsBot"
 
-# ──────────────────────────────────────────────────────────────
-# KV Namespace for persistent state (warnings, language prefs, stats)
+# KV Namespace for persistent state (language prefs, stats)
 # Create with: wrangler kv:namespace create "BOT_KV"
 # Then replace the id below with the one from the output
-# ──────────────────────────────────────────────────────────────
 [[kv_namespaces]]
 binding = "BOT_KV"
 id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
 preview_id = "REPLACE_WITH_YOUR_KV_NAMESPACE_PREVIEW_ID"
 
-# ──────────────────────────────────────────────────────────────
-# Secrets (set via wrangler secret put):
+# Workers AI binding — enables env.AI.run() for Llama 3.1 8B (free!)
+[ai]
+binding = "AI"
+
+# Secrets (set via: wrangler secret put BOT_TOKEN)
 #   wrangler secret put BOT_TOKEN
 #   wrangler secret put WEBHOOK_SECRET
-# ──────────────────────────────────────────────────────────────

@@ -1,541 +1,215 @@
-/**
- * Code snippets for common patterns and languages
- */
-export const CODE_SNIPPETS = {
+const SNIPPETS = {
   js: {
-    label: 'JavaScript',
-    snippets: [
-      {
-        title: '🔄 Async/Await Fetch',
-        code: `async function fetchData(url) {
+    lang: 'JavaScript', langKey: 'js',
+    title: '⚡ *Async/Await Fetch*',
+    code: `async function getData(url) {
   try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(\`HTTP error! status: \${response.status}\`);
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Fetch failed:', error);
-    throw error;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(\`HTTP \${res.status}\`);
+    return await res.json();
+  } catch (err) {
+    console.error('Fetch failed:', err.message);
+    return null;
   }
-}`
-      },
-      {
-        title: '📦 Debounce Function',
-        code: `function debounce(func, wait) {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-}
-
-// Usage: const debouncedSearch = debounce(search, 300);`
-      },
-      {
-        title: '🔒 Deep Clone Object',
-        code: `// Method 1: structuredClone (modern)
-const clone = structuredClone(obj);
-
-// Method 2: JSON parse/stringify (no functions/dates)
-const clone2 = JSON.parse(JSON.stringify(obj));
-
-// Method 3: Recursive deep clone
-function deepClone(obj) {
-  if (obj === null || typeof obj !== 'object') return obj;
-  if (Array.isArray(obj)) return obj.map(deepClone);
-  return Object.fromEntries(
-    Object.entries(obj).map(([k, v]) => [k, deepClone(v)])
-  );
-}`
-      }
-    ]
+}`,
   },
-
   py: {
-    label: 'Python',
-    snippets: [
-      {
-        title: '🌐 HTTP Request with retry',
-        code: `import httpx
-from tenacity import retry, stop_after_attempt, wait_exponential
+    lang: 'Python', langKey: 'python',
+    title: '🐍 *Decorator Pattern*',
+    code: `import time
+from functools import wraps
 
-@retry(stop=stop_after_attempt(3),
-       wait=wait_exponential(multiplier=1, min=4, max=10))
-async def fetch_with_retry(url: str) -> dict:
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url, timeout=30.0)
-        response.raise_for_status()
-        return response.json()`
-      },
-      {
-        title: '🎯 Dataclass with validation',
-        code: `from dataclasses import dataclass, field
-from typing import Optional
-import re
+def timer(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.perf_counter()
+        result = func(*args, **kwargs)
+        end = time.perf_counter()
+        print(f"{func.__name__} took {end-start:.4f}s")
+        return result
+    return wrapper
 
-@dataclass
-class User:
-    name: str
-    email: str
-    age: int = 0
-    tags: list = field(default_factory=list)
-
-    def __post_init__(self):
-        if not re.match(r'^[^@]+@[^@]+\.[^@]+$', self.email):
-            raise ValueError(f'Invalid email: {self.email}')
-        if self.age < 0:
-            raise ValueError('Age must be non-negative')`
-      },
-      {
-        title: '⚡ Context Manager',
-        code: `from contextlib import contextmanager
-import time
-
-@contextmanager
-def timer(label=""):
-    start = time.perf_counter()
-    try:
-        yield
-    finally:
-        elapsed = time.perf_counter() - start
-        print(f"{label}: {elapsed:.4f}s")
-
-# Usage:
-# with timer("database query"):
-#     result = db.query(...)`
-      }
-    ]
+@timer
+def slow_function():
+    time.sleep(0.1)`,
   },
-
   go: {
-    label: 'Go',
-    snippets: [
-      {
-        title: '🚀 HTTP Server with middleware',
-        code: `package main
+    lang: 'Go', langKey: 'go',
+    title: '🔵 *Goroutines & Channels*',
+    code: `package main
 
 import (
-    "fmt"
-    "log"
-    "net/http"
-    "time"
+  "fmt"
+  "sync"
 )
 
-func loggingMiddleware(next http.HandlerFunc) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-        start := time.Now()
-        next.ServeHTTP(w, r)
-        log.Printf("%s %s %v", r.Method, r.URL.Path, time.Since(start))
-    }
-}
-
-func handler(w http.ResponseWriter, r *http.Request) {
-    fmt.Fprintln(w, "Hello, World!")
+func worker(id int, wg *sync.WaitGroup) {
+  defer wg.Done()
+  fmt.Printf("Worker %d done\\n", id)
 }
 
 func main() {
-    http.HandleFunc("/", loggingMiddleware(handler))
-    log.Fatal(http.ListenAndServe(":8080", nil))
-}`
-      },
-      {
-        title: '📊 Goroutine with WaitGroup',
-        code: `package main
-
-import (
-    "fmt"
-    "sync"
-)
-
-func worker(id int, wg *sync.WaitGroup, results chan<- int) {
-    defer wg.Done()
-    // Simulate work
-    results <- id * id
-}
-
-func main() {
-    var wg sync.WaitGroup
-    results := make(chan int, 5)
-
-    for i := 1; i <= 5; i++ {
-        wg.Add(1)
-        go worker(i, &wg, results)
-    }
-
-    go func() {
-        wg.Wait()
-        close(results)
-    }()
-
-    for result := range results {
-        fmt.Println(result)
-    }
-}`
-      }
-    ]
+  var wg sync.WaitGroup
+  for i := 1; i <= 5; i++ {
+    wg.Add(1)
+    go worker(i, &wg)
+  }
+  wg.Wait()
+}`,
   },
-
   rs: {
-    label: 'Rust',
-    snippets: [
-      {
-        title: '⚡ Async HTTP with Tokio',
-        code: `use reqwest::Error;
-use serde::{Deserialize, Serialize};
+    lang: 'Rust', langKey: 'rust',
+    title: '🦀 *Result & Error Handling*',
+    code: `use std::num::ParseIntError;
 
-#[derive(Deserialize, Serialize, Debug)]
-struct Post {
-    id: u32,
-    title: String,
-    body: String,
-}
-
-#[tokio::main]
-async fn main() -> Result<(), Error> {
-    let posts: Vec<Post> = reqwest::get(
-        "https://jsonplaceholder.typicode.com/posts"
-    )
-    .await?
-    .json()
-    .await?;
-
-    for post in &posts[..3] {
-        println!("{}: {}", post.id, post.title);
-    }
-    Ok(())
-}`
-      },
-      {
-        title: '🔒 Error handling with Result',
-        code: `use std::num::ParseIntError;
-use thiserror::Error;
-
-#[derive(Error, Debug)]
+#[derive(Debug)]
 enum AppError {
-    #[error("Parse error: {0}")]
-    Parse(#[from] ParseIntError),
-    #[error("Validation error: {0}")]
-    Validation(String),
+    ParseError(ParseIntError),
+    NegativeNumber,
 }
 
 fn parse_positive(s: &str) -> Result<u32, AppError> {
-    let n: i32 = s.parse()?;
-    if n < 0 {
-        return Err(AppError::Validation(
-            format!("{} is negative", n)
-        ));
-    }
+    let n: i32 = s.parse().map_err(AppError::ParseError)?;
+    if n < 0 { return Err(AppError::NegativeNumber); }
     Ok(n as u32)
-}`
-      }
-    ]
+}`,
   },
-
   ts: {
-    label: 'TypeScript',
-    snippets: [
-      {
-        title: '🎯 Generic Repository Pattern',
-        code: `interface Repository<T, ID> {
-  findById(id: ID): Promise<T | null>;
-  findAll(): Promise<T[]>;
-  save(entity: T): Promise<T>;
-  delete(id: ID): Promise<void>;
-}
+    lang: 'TypeScript', langKey: 'typescript',
+    title: '🔷 *Generic Utility Types*',
+    code: `type DeepReadonly<T> = {
+  readonly [K in keyof T]: T[K] extends object
+    ? DeepReadonly<T[K]>
+    : T[K];
+};
 
-interface User {
-  id: number;
-  name: string;
-  email: string;
-}
+type ApiResponse<T> = {
+  data: T;
+  status: number;
+  message: string;
+  timestamp: Date;
+};
 
-class UserRepository implements Repository<User, number> {
-  private users: Map<number, User> = new Map();
-
-  async findById(id: number): Promise<User | null> {
-    return this.users.get(id) ?? null;
-  }
-
-  async findAll(): Promise<User[]> {
-    return Array.from(this.users.values());
-  }
-
-  async save(user: User): Promise<User> {
-    this.users.set(user.id, user);
-    return user;
-  }
-
-  async delete(id: number): Promise<void> {
-    this.users.delete(id);
-  }
-}`
-      },
-      {
-        title: '🔧 Zod Validation Schema',
-        code: `import { z } from 'zod';
-
-const UserSchema = z.object({
-  id: z.number().positive(),
-  name: z.string().min(2).max(50),
-  email: z.string().email(),
-  age: z.number().int().min(18).max(120).optional(),
-  role: z.enum(['admin', 'user', 'moderator']),
-  metadata: z.record(z.unknown()).optional(),
-});
-
-type User = z.infer<typeof UserSchema>;
-
-function validateUser(data: unknown): User {
-  return UserSchema.parse(data);
-}`
-      }
-    ]
+async function fetchUser(id: number): Promise<ApiResponse<User>> {
+  const res = await fetch(\`/api/users/\${id}\`);
+  return res.json();
+}`,
   },
-
-  java: {
-    label: 'Java',
-    snippets: [
-      {
-        title: '🏭 Builder Pattern',
-        code: `public class DatabaseConfig {
-    private final String host;
-    private final int port;
-    private final String database;
-    private final int maxPoolSize;
-
-    private DatabaseConfig(Builder builder) {
-        this.host = builder.host;
-        this.port = builder.port;
-        this.database = builder.database;
-        this.maxPoolSize = builder.maxPoolSize;
-    }
-
-    public static class Builder {
-        private String host = "localhost";
-        private int port = 5432;
-        private String database;
-        private int maxPoolSize = 10;
-
-        public Builder host(String host) {
-            this.host = host; return this;
-        }
-        public Builder port(int port) {
-            this.port = port; return this;
-        }
-        public Builder database(String db) {
-            this.database = db; return this;
-        }
-        public Builder maxPoolSize(int size) {
-            this.maxPoolSize = size; return this;
-        }
-        public DatabaseConfig build() {
-            return new DatabaseConfig(this);
-        }
-    }
-}`
-      }
-    ]
+  sql: {
+    lang: 'SQL', langKey: 'sql',
+    title: '🗄️ *Window Functions*',
+    code: `-- Rank users by score within each department
+SELECT
+  name,
+  department,
+  score,
+  RANK() OVER (
+    PARTITION BY department
+    ORDER BY score DESC
+  ) AS dept_rank,
+  AVG(score) OVER (
+    PARTITION BY department
+  ) AS dept_avg
+FROM employees
+ORDER BY department, dept_rank;`,
   },
+  bash: {
+    lang: 'Bash', langKey: 'bash',
+    title: '🔧 *Process Monitoring*',
+    code: `#!/bin/bash
+# Monitor a process and restart if it dies
 
+PROCESS="myapp"
+LOG="/var/log/monitor.log"
+
+while true; do
+  if ! pgrep -x "$PROCESS" > /dev/null; then
+    echo "$(date): $PROCESS died, restarting..." >> "$LOG"
+    systemctl restart "$PROCESS"
+  fi
+  sleep 10
+done`,
+  },
   cpp: {
-    label: 'C++',
-    snippets: [
-      {
-        title: '🔒 RAII Resource Management',
-        code: `#include <iostream>
-#include <memory>
-#include <vector>
+    lang: 'C++', langKey: 'cpp',
+    title: '⚙️ *Smart Pointers*',
+    code: `#include <memory>
+#include <iostream>
 
-class DatabaseConnection {
-public:
-    DatabaseConnection(const std::string& url) : url_(url) {
-        std::cout << "Connecting to " << url_ << "\\n";
-        // connect...
-    }
-
-    ~DatabaseConnection() {
-        std::cout << "Closing connection\\n";
-        // cleanup...
-    }
-
-    // Delete copy, allow move
-    DatabaseConnection(const DatabaseConnection&) = delete;
-    DatabaseConnection& operator=(const DatabaseConnection&) = delete;
-    DatabaseConnection(DatabaseConnection&&) = default;
-
-    void query(const std::string& sql) {
-        std::cout << "Executing: " << sql << "\\n";
-    }
-
-private:
-    std::string url_;
+struct Node {
+  int val;
+  std::shared_ptr<Node> next;
+  Node(int v) : val(v) {}
 };
 
 int main() {
-    auto db = std::make_unique<DatabaseConnection>("localhost:5432");
-    db->query("SELECT 1");
-    // Auto-cleanup when out of scope
-}`
-      }
-    ]
+  auto head = std::make_shared<Node>(1);
+  head->next = std::make_shared<Node>(2);
+  head->next->next = std::make_shared<Node>(3);
+
+  for (auto n = head; n; n = n->next)
+    std::cout << n->val << " ";
+}`,
   },
-
-  sql: {
-    label: 'SQL',
-    snippets: [
-      {
-        title: '📊 Window Functions',
-        code: `-- Ranking with partitions
-SELECT
-    employee_id,
-    name,
-    department,
-    salary,
-    RANK() OVER (
-        PARTITION BY department
-        ORDER BY salary DESC
-    ) AS dept_rank,
-    LAG(salary, 1) OVER (
-        PARTITION BY department
-        ORDER BY salary
-    ) AS prev_salary,
-    salary - LAG(salary, 1) OVER (
-        PARTITION BY department
-        ORDER BY salary
-    ) AS salary_increase
-FROM employees
-ORDER BY department, dept_rank;`
-      },
-      {
-        title: '🔄 CTE with Recursive Query',
-        code: `-- Organizational hierarchy
-WITH RECURSIVE org_tree AS (
-    -- Base case: top-level managers
-    SELECT id, name, manager_id, 0 AS level,
-           name::text AS path
-    FROM employees
-    WHERE manager_id IS NULL
-
-    UNION ALL
-
-    -- Recursive case: employees with managers
-    SELECT e.id, e.name, e.manager_id,
-           ot.level + 1,
-           ot.path || ' > ' || e.name
-    FROM employees e
-    JOIN org_tree ot ON e.manager_id = ot.id
-)
-SELECT level, path
-FROM org_tree
-ORDER BY path;`
-      }
-    ]
-  },
-
-  bash: {
-    label: 'Bash',
-    snippets: [
-      {
-        title: '🔧 Script template with error handling',
-        code: [
-          '#!/usr/bin/env bash',
-          'set -euo pipefail',
-          '',
-          '# Script metadata',
-          'readonly SCRIPT_NAME="$(basename "$0")"',
-          'readonly LOG_FILE="/tmp/script.log"',
-          '',
-          '# Logging helpers',
-          'log()   { echo "[$(date +%F\\ %T)] $*" | tee -a "$LOG_FILE"; }',
-          'error() { log "ERROR: $*" >&2; exit 1; }',
-          'warn()  { log "WARN: $*"; }',
-          '',
-          '# Cleanup on exit',
-          'cleanup() { log "Script exiting with code: $?"; }',
-          'trap cleanup EXIT',
-          '',
-          '# Check dependencies',
-          'check_deps() {',
-          '    for dep in "$@"; do',
-          '        command -v "$dep" &>/dev/null || error "$dep not found"',
-          '    done',
-          '}',
-          '',
-          'check_deps curl jq git',
-          'log "All dependencies found. Starting..."',
-        ].join('\n')
-      }
-    ]
-  },
-
   css: {
-    label: 'CSS',
-    snippets: [
-      {
-        title: '🎨 Modern CSS utilities',
-        code: `/* Container queries */
-.card-container {
-  container-type: inline-size;
-}
-
-@container (min-width: 400px) {
-  .card { display: grid; grid-template-columns: 1fr 2fr; }
-}
-
-/* CSS custom properties with fallbacks */
-:root {
-  --color-primary: hsl(220 90% 56%);
-  --color-surface: hsl(0 0% 100%);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  --radius: 0.5rem;
-}
-
-/* Modern centering */
-.center {
+    lang: 'CSS', langKey: 'css',
+    title: '🎨 *Modern CSS Grid*',
+    code: `/* Responsive card grid */
+.grid {
   display: grid;
-  place-items: center;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(280px, 1fr)
+  );
+  gap: 1.5rem;
+  padding: 2rem;
 }
 
-/* Fluid typography */
-.fluid-text {
-  font-size: clamp(1rem, 2.5vw, 2rem);
-  line-height: 1.5;
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  transition: transform .2s ease;
 }
 
-/* Smooth scrolling + reduced motion respect */
-@media (prefers-reduced-motion: no-preference) {
-  html { scroll-behavior: smooth; }
-}
+.card:hover { transform: translateY(-4px); }`,
+  },
+  java: {
+    lang: 'Java', langKey: 'java',
+    title: '☕ *Builder Pattern*',
+    code: `public class User {
+  private final String name;
+  private final String email;
+  private final int age;
 
-/* Dark mode */
-@media (prefers-color-scheme: dark) {
-  :root { --color-surface: hsl(220 15% 10%); }
-}`
-      }
-    ]
+  private User(Builder b) {
+    this.name = b.name;
+    this.email = b.email;
+    this.age = b.age;
   }
+
+  public static class Builder {
+    private String name, email;
+    private int age;
+    public Builder name(String n) { name = n; return this; }
+    public Builder email(String e) { email = e; return this; }
+    public Builder age(int a) { age = a; return this; }
+    public User build() { return new User(this); }
+  }
+}`,
+  },
 };
 
 export function getSnippet(lang) {
-  const entry = CODE_SNIPPETS[lang.toLowerCase()];
-  if (!entry) return null;
-
-  // Pick a random snippet from the language
-  const snippet = entry.snippets[Math.floor(Math.random() * entry.snippets.length)];
-  return {
-    lang: entry.label,
-    title: snippet.title,
-    code: snippet.code,
-    langKey: lang.toLowerCase()
-  };
+  return SNIPPETS[lang] || null;
 }
 
 export function getAvailableLangs() {
-  return Object.entries(CODE_SNIPPETS).map(([key, val]) => `\`${key}\` (${val.label})`);
+  return Object.keys(SNIPPETS);
+}
+
+export function getRandomSnippet() {
+  const keys = Object.keys(SNIPPETS);
+  return SNIPPETS[keys[Math.floor(Math.random() * keys.length)]];
 }
