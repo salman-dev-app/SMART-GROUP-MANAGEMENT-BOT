@@ -13,6 +13,7 @@ import {
   generateTests, generateDocumentation, convertCode,
   analyzeComplexity, securityAudit, generateRegex,
   generateSQL, generateAPI, chatWithMemory,
+  researchAndAnswer, agentSolve, getModelInfo,
 } from './modules/ai.js';
 import {
   handleFunCallback, handleJoke, handleQuote,
@@ -160,6 +161,9 @@ async function handleCommand(msg, env, state, lang) {
     case 'generate': case 'gen': case 'code': return handleGenerate(token, msg, env, state, args);
     case 'summarize': case 'sum':  return handleSummarize(token, msg, env, state, args);
     case 'translate': case 'tr':   return handleTranslate(token, msg, env, state, args);
+    case 'research': case 'search': case 'find': return handleResearch(token, msg, env, state, args);
+    case 'agent': case 'solve': case 'build': return handleAgent(token, msg, env, state, args);
+    case 'models': case 'status':  return handleModelStatus(token, msg);
 
     // Power commands
     case 'debug':     return handleDebug(token, msg, env, state, args);
@@ -174,7 +178,7 @@ async function handleCommand(msg, env, state, lang) {
     case 'api':       return handleAPIGen(token, msg, env, state, args);
 
     // Landing page
-    case 'landing': case 'page': case 'website': case 'lp': return handleLandingPage(token, msg, env, state, args);
+    case 'landing': case 'page': case 'website': case 'lp': case 'html': return handleLandingPage(token, msg, env, state, args);
 
     // Dev Tools
     case 'json':      return handleJson(token, msg, args);
@@ -217,6 +221,48 @@ async function handleAsk(token, msg, env, state, args) {
   const answer = await askAI(env, question);
   if (!answer) return sendMessage(token, cid, '⚠️ AI unavailable right now. Try again.');
   return sendSmartResponse(token, cid, answer, state, 'answer', msg);
+}
+
+async function handleResearch(token, msg, env, state, args) {
+  const cid = msg.chat.id;
+  const query = args.join(' ').trim();
+  if (!query) return sendMessage(token, cid,
+    'Usage: `/research <topic>`\n\nExamples:\n`/research latest React 19 features`\n`/research best vector database 2025`\n`/research how does WASM memory work`\n\nI\'ll search the web and give you a real answer.');
+  await sendChatAction(token, cid, 'typing');
+  const thinking = await sendMessage(token, cid, `🔍 Researching...`);
+  await incrementStat(state, 'ai_calls');
+  const result = await researchAndAnswer(env, query);
+  if (!result) return sendMessage(token, cid, '⚠️ Research failed. Try again.');
+  return sendSmartResponse(token, cid, result, state, 'research', msg);
+}
+
+async function handleAgent(token, msg, env, state, args) {
+  const cid = msg.chat.id;
+  const task = args.join(' ').trim();
+  if (!task) return sendMessage(token, cid,
+    'Usage: `/agent <complex task>`\n\nFor big tasks that need planning + execution:\n`/agent build a full auth system with JWT and refresh tokens in Node.js`\n`/agent create a Python web scraper with rate limiting and proxy rotation`\n`/agent design a distributed task queue with Redis`');
+  await sendChatAction(token, cid, 'typing');
+  await sendMessage(token, cid, `⚡ Working on it...`);
+  await incrementStat(state, 'ai_calls');
+  const result = await agentSolve(env, task);
+  if (!result) return sendMessage(token, cid, '⚠️ Agent failed. Try again.');
+  return sendSmartResponse(token, cid, result, state, task, msg);
+}
+
+async function handleModelStatus(token, msg) {
+  const cid = msg.chat.id;
+  const info = getModelInfo();
+  return sendMessage(token, cid,
+    `*AI Engine Status*\n\n` +
+    `*Coding:* ${info.primary}\n` +
+    `*Research:* ${info.research}\n` +
+    `*Reasoning:* ${info.reasoning}\n` +
+    `*Speed:* ${info.speed}\n` +
+    `*Context:* ${info.context}\n` +
+    `*Updated:* ${info.year}\n\n` +
+    `Auto-routes to best model per task.`,
+    { replyMarkup: inlineKeyboard([[{ text: '🏠 Home', data: 'home' }]]) }
+  );
 }
 
 async function handleReview(token, msg, env, state, args) {
@@ -462,14 +508,14 @@ async function handleStart(token, msg, lang) {
   const isGroup = msg.chat.type !== 'private';
 
   const text = isGroup
-    ? `*Hey ${name}!* I'm here.\n\nMention me or reply to my messages to chat. Type /help for all commands.`
-    : `*Hey ${name}! 👋*\n\nI'm your AI coding agent — built to help you code faster, debug smarter, and build anything.\n\nJust type what you need or use a command. Let's build something.`;
+    ? `*Hey ${name}!* mention me or reply to chat. /help for all commands.`
+    : `*Hey ${name}! 👋*\n\nYour AI coding agent — 2025/2026 models, web research, full agent mode.\n\nJust type what you need.`;
 
   return sendMessage(token, cid, text, {
     replyMarkup: inlineKeyboard([
-      [{ text: '🤖 AI Chat', data: 'menu:ai' }, { text: '⚡ Power Tools', data: 'menu:power' }],
-      [{ text: '🔧 Dev Tools', data: 'menu:tools' }, { text: '📄 Landing Page', data: 'menu:landing' }],
-      [{ text: '📋 All Commands', data: 'help' }, { text: '📊 Stats', data: 'menu:stats' }],
+      [{ text: '🤖 AI', data: 'menu:ai' }, { text: '⚡ Power', data: 'menu:power' }],
+      [{ text: '🔍 Research', data: 'menu:research' }, { text: '📄 Landing', data: 'menu:landing' }],
+      [{ text: '🔧 Tools', data: 'menu:tools' }, { text: '📋 Help', data: 'help' }],
     ]),
   });
 }
@@ -487,31 +533,24 @@ async function handleHelp(token, msg, lang) {
 }
 
 function getHelpText() {
-  return `*All Commands*
+  return `*Commands*
 
 *🤖 AI*
-/ask — Ask anything
-/generate — Generate code
-/review — Code review
-/explain — Explain a concept
-/fix — Fix broken code
-/summarize — Summarize text
-/translate — Translate text
+/ask · /generate · /review · /explain · /fix
+/summarize · /translate
+
+*🔍 Research & Agent*
+/research — Search web + answer with latest info
+/agent — Solve complex multi-step tasks
+/models — View current AI engine status
 
 *⚡ Power*
-/debug — Debug code + error
-/optimize — Optimize code
-/test — Generate unit tests
-/docs — Generate documentation
-/convert — Convert between languages
-/complexity — Analyze Big O complexity
-/security — Security audit
-/regex — Generate regex patterns
-/sql — Generate SQL queries
-/api — Design & build REST APIs
+/debug · /optimize · /test · /docs
+/convert · /complexity · /security
+/regex · /sql · /api
 
 *📄 Landing Page*
-/landing — Generate & download full HTML landing page
+/landing — Generate full HTML file
 
 *🔧 Tools*
 /json · /hash · /uuid · /encode · /decode
@@ -524,7 +563,7 @@ function getHelpText() {
 *⚙️ Other*
 /stats · /lang · /terms · /help
 
-_Tip: Just type naturally in private chat — I remember context!_`;
+_Type anything in private — I have memory._`;
 }
 
 // ─── /lang ───────────────────────────────────────────────────────────────────
@@ -561,7 +600,8 @@ async function handleLangMenu(token, state, msg, args, currentLang) {
 async function handleStats(token, msg, state) {
   const cid = msg.chat.id;
   const stats = await getStats(state);
-  const text = `*Stats*\n\nMessages processed: \`${stats.messages}\`\nCommands used: \`${stats.commands}\`\nAI calls made: \`${stats.ai_calls}\`\nFiles generated: \`${stats.files_sent}\`\n\nAI: OpenRouter (Claude 3.5) + Groq (Llama 3.3 70B)\nCreated by: Md Salman Biswas`;
+  const info = getModelInfo();
+  const text = `*Stats*\n\nMessages: \`${stats.messages}\`\nCommands: \`${stats.commands}\`\nAI calls: \`${stats.ai_calls}\`\nFiles sent: \`${stats.files_sent}\`\n\n*Engine:* ${info.primary}\n*Research:* ${info.research}\n*Context:* ${info.context}\nBy: Md Salman Biswas`;
   return sendMessage(token, cid, text, {
     replyMarkup: inlineKeyboard([[{ text: '🔄 Refresh', data: 'menu:stats' }, { text: '🏠 Home', data: 'home' }]]),
   });
@@ -581,12 +621,12 @@ async function handleCallback(query, env, state) {
       await answerCallbackQuery(token, query.id);
       const name = query.from?.first_name || 'there';
       return editMessageText(token, cid, mid,
-        `*Hey ${name}! 👋*\n\nI'm your AI coding agent. Type what you need or pick a menu below.`,
+        `*Hey ${name}! 👋*\n\nAI coding agent — 2025/2026 models, web research, full agent mode.`,
         {
           replyMarkup: inlineKeyboard([
-            [{ text: '🤖 AI Chat', data: 'menu:ai' }, { text: '⚡ Power Tools', data: 'menu:power' }],
-            [{ text: '🔧 Dev Tools', data: 'menu:tools' }, { text: '📄 Landing Page', data: 'menu:landing' }],
-            [{ text: '📋 All Commands', data: 'help' }, { text: '📊 Stats', data: 'menu:stats' }],
+            [{ text: '🤖 AI', data: 'menu:ai' }, { text: '⚡ Power', data: 'menu:power' }],
+            [{ text: '🔍 Research', data: 'menu:research' }, { text: '📄 Landing', data: 'menu:landing' }],
+            [{ text: '🔧 Tools', data: 'menu:tools' }, { text: '📋 Help', data: 'help' }],
           ]),
         });
     }
@@ -604,10 +644,22 @@ async function handleCallback(query, env, state) {
     if (data === 'menu:ai') {
       await answerCallbackQuery(token, query.id);
       return editMessageText(token, cid, mid,
-        `*AI Commands*\n\n/ask — Ask anything\n/generate — Generate code\n/review — Code review\n/explain — Explain a concept\n/fix — Fix broken code\n/summarize — Summarize text\n/translate — Translate text\n\n_Or just type anything in private chat — I've got context memory._`,
+        `*AI Commands*\n\n/ask — Ask anything\n/generate — Generate code\n/review — Code review\n/explain — Explain a concept\n/fix — Fix broken code\n/summarize — Summarize text\n/translate — Translate text\n\n_Type anything in private — context memory enabled._`,
         {
           replyMarkup: inlineKeyboard([
-            [{ text: '⚡ Power', data: 'menu:power' }, { text: '🔧 Tools', data: 'menu:tools' }],
+            [{ text: '🔍 Research', data: 'menu:research' }, { text: '⚡ Power', data: 'menu:power' }],
+            [{ text: '🔧 Tools', data: 'menu:tools' }, { text: '🏠 Home', data: 'home' }],
+          ]),
+        });
+    }
+
+    if (data === 'menu:research') {
+      await answerCallbackQuery(token, query.id);
+      return editMessageText(token, cid, mid,
+        `*Research & Agent Mode*\n\n/research — Real-time web search + AI synthesis\n/agent — Solve complex multi-step tasks\n/models — Current AI engine status\n\nExamples:\n\`/research best Rust async runtime 2025\`\n\`/research latest Next.js 15 features\`\n\`/agent build JWT auth system Node.js\``,
+        {
+          replyMarkup: inlineKeyboard([
+            [{ text: '🤖 AI', data: 'menu:ai' }, { text: '⚡ Power', data: 'menu:power' }],
             [{ text: '🏠 Home', data: 'home' }],
           ]),
         });
@@ -889,9 +941,9 @@ function getDashboardHTML() {
     </nav>
 
     <div class="hero">
-      <div class="badge" style="margin-bottom: 16px;">⚡ AI-Powered Coding Agent</div>
+      <div class="badge" style="margin-bottom: 16px;">🚀 2025/2026 AI Models · Web Research · Full Agent</div>
       <h1>Your <span class="grad">AI Dev</span><br>in Telegram</h1>
-      <p class="subtitle">Generate code, debug, build landing pages, convert languages — powered by Claude 3.5 + Llama 70B.</p>
+      <p class="subtitle">Qwen3 Coder · Kimi K2 · DeepSeek V3.2 · Grok 4.1 · Groq Compound with live web search.</p>
       <div class="cta-group">
         <a href="https://t.me/SalmanDevToolsBot" class="btn btn-primary">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.14 14.231l-2.98-.929c-.648-.203-.66-.648.136-.961l11.647-4.494c.54-.194 1.01.132.95.374z"/></svg>
@@ -902,47 +954,52 @@ function getDashboardHTML() {
     </div>
 
     <div class="stats-row">
-      <div class="stat-item"><div class="stat-num">2</div><div class="stat-label">AI Engines</div></div>
-      <div class="stat-item"><div class="stat-num">30+</div><div class="stat-label">Commands</div></div>
-      <div class="stat-item"><div class="stat-num">15+</div><div class="stat-label">Languages</div></div>
+      <div class="stat-item"><div class="stat-num">8+</div><div class="stat-label">AI Models</div></div>
+      <div class="stat-item"><div class="stat-num">35+</div><div class="stat-label">Commands</div></div>
+      <div class="stat-item"><div class="stat-num">2M</div><div class="stat-label">Context Tokens</div></div>
       <div class="stat-item"><div class="stat-num">Free</div><div class="stat-label">Forever</div></div>
     </div>
 
     <div class="section" id="features">
       <div class="section-title">
         <h2>What it can do</h2>
-        <p>An agent that actually understands code</p>
+        <p>2025/2026 models · web research · full agent mode</p>
       </div>
       <div class="grid">
         <div class="card">
+          <div class="card-icon">🔍</div>
+          <h3>Live Web Research</h3>
+          <p>Groq Compound searches the web in real-time. Ask about latest frameworks, packages, and tech from 2025/2026.</p>
+        </div>
+        <div class="card">
           <div class="card-icon">🧠</div>
-          <h3>AI Chat with Memory</h3>
-          <p>Conversational AI that remembers context. Ask follow-up questions naturally.</p>
+          <h3>Conversation Memory</h3>
+          <p>Remembers full context per user. Ask follow-up questions, iterate on code, build complex things step by step.</p>
         </div>
         <div class="card">
           <div class="card-icon">⚡</div>
-          <h3>Code Generation</h3>
-          <p>Generate complete, production-ready code for any language or framework.</p>
+          <h3>Latest 2025/2026 Models</h3>
+          <p>Qwen3 Coder Plus, Kimi K2.5, DeepSeek V3.2, Grok 4.1, DeepSeek R1 — auto-routed by task type.</p>
         </div>
         <div class="card">
-          <div class="card-icon">🔍</div>
-          <h3>Code Review & Debug</h3>
-          <p>Review, debug, optimize, and security-audit your code automatically.</p>
+          <div class="card-icon">🤖</div>
+          <h3>Full Agent Mode</h3>
+          <p>/agent for complex multi-step tasks. Breaks down, plans, executes, and delivers complete solutions.</p>
         </div>
         <div class="card">
           <div class="card-icon">📄</div>
           <h3>Landing Page Builder</h3>
-          <p>Generate complete HTML landing pages ready to host anywhere. Download instantly.</p>
+          <p>Describe your product → get a complete, stunning HTML file ready to host on Netlify/Vercel instantly.</p>
         </div>
         <div class="card">
           <div class="card-icon">📁</div>
-          <h3>Auto File Creation</h3>
-          <p>When output is too long for Telegram, the bot automatically sends it as a file.</p>
+          <h3>Auto File Delivery</h3>
+          <p>Output too long for Telegram? Automatically sent as .py/.js/.html/.ts/etc file. No truncation ever.</p>
         </div>
         <div class="card">
           <div class="card-icon">🔧</div>
           <h3>Developer Tools</h3>
-          <p>JSON formatter, UUID generator, hash, Base64, calculator, password generator and more.</p>
+          <p>JSON formatter, hash, UUID, Base64, calc, regex tester, color converter, password generator and more.</p>
         </div>
       </div>
     </div>
@@ -953,6 +1010,9 @@ function getDashboardHTML() {
         <p>Everything at a slash</p>
       </div>
       <div class="commands-grid">
+        <div class="cmd"><div><div class="cmd-name">/research</div><div class="cmd-desc">Live web search</div></div></div>
+        <div class="cmd"><div><div class="cmd-name">/agent</div><div class="cmd-desc">Complex task solver</div></div></div>
+        <div class="cmd"><div><div class="cmd-name">/models</div><div class="cmd-desc">AI engine status</div></div></div>
         <div class="cmd"><div><div class="cmd-name">/ask</div><div class="cmd-desc">Ask anything</div></div></div>
         <div class="cmd"><div><div class="cmd-name">/generate</div><div class="cmd-desc">Generate code</div></div></div>
         <div class="cmd"><div><div class="cmd-name">/review</div><div class="cmd-desc">Code review</div></div></div>
@@ -971,6 +1031,45 @@ function getDashboardHTML() {
         <div class="cmd"><div><div class="cmd-name">/explain</div><div class="cmd-desc">Explain concepts</div></div></div>
         <div class="cmd"><div><div class="cmd-name">/translate</div><div class="cmd-desc">Translate text</div></div></div>
         <div class="cmd"><div><div class="cmd-name">/summarize</div><div class="cmd-desc">Summarize text</div></div></div>
+      </div>
+    </div>
+
+    <div class="section" style="padding-top: 0;">
+      <div class="section-title">
+        <h2>AI Models (2025/2026)</h2>
+        <p>Auto-routes to the best model for each task</p>
+      </div>
+      <div class="grid">
+        <div class="card" style="border-color: #7c6af733;">
+          <div style="font-size:11px;color:#7c6af7;font-family:var(--mono);margin-bottom:8px;">CODING</div>
+          <h3>Qwen3 Coder Plus</h3>
+          <p>1M context · coding SOTA 2025 · primary coding model</p>
+        </div>
+        <div class="card" style="border-color: #06b6d433;">
+          <div style="font-size:11px;color:#06b6d4;font-family:var(--mono);margin-bottom:8px;">CODING</div>
+          <h3>Kimi K2.5</h3>
+          <p>1T params · Moonshot AI · 262K ctx · elite coder</p>
+        </div>
+        <div class="card" style="border-color: #10b98133;">
+          <div style="font-size:11px;color:#10b981;font-family:var(--mono);margin-bottom:8px;">RESEARCH</div>
+          <h3>Groq Compound</h3>
+          <p>Built-in web search · Llama 4 + Llama 3.3 · real-time data</p>
+        </div>
+        <div class="card" style="border-color: #f59e0b33;">
+          <div style="font-size:11px;color:#f59e0b;font-family:var(--mono);margin-bottom:8px;">REASONING</div>
+          <h3>DeepSeek R1-0528</h3>
+          <p>Chain-of-thought reasoning · best for debugging & analysis</p>
+        </div>
+        <div class="card" style="border-color: #ec489933;">
+          <div style="font-size:11px;color:#ec4899;font-family:var(--mono);margin-bottom:8px;">REASONING</div>
+          <h3>Gemini 2.5 Pro</h3>
+          <p>Google · 1M context · multimodal · deep reasoning</p>
+        </div>
+        <div class="card" style="border-color: #8b5cf633;">
+          <div style="font-size:11px;color:#8b5cf6;font-family:var(--mono);margin-bottom:8px;">SPEED</div>
+          <h3>DeepSeek V3.2 + Grok 4.1</h3>
+          <p>Ultra-fast inference · 2M context on Grok 4.1</p>
+        </div>
       </div>
     </div>
 
@@ -1024,7 +1123,7 @@ function getTermsHTML() {
     <h2>4. Privacy</h2>
     <p>We store minimal data: usage statistics and language preferences. No personal information is collected or sold. Conversation context is stored temporarily (1 hour) to enable multi-turn conversations.</p>
     <h2>5. AI Services</h2>
-    <p>This bot uses OpenRouter (Claude 3.5 Sonnet) and Groq (Llama 3.3 70B) for AI inference. Their respective terms of service apply to AI usage.</p>
+    <p>This bot uses OpenRouter (Qwen3 Coder, Kimi K2, DeepSeek V3.2, Grok 4.1, Gemini 2.5 Pro, DeepSeek R1) and Groq (Compound with web search, Kimi K2, GPT-OSS 120B) for AI inference. Their respective terms of service apply.</p>
     <h2>6. Service Availability</h2>
     <p>We do not guarantee 100% uptime. The service may be interrupted due to maintenance, API rate limits, or other factors.</p>
     <h2>7. Changes</h2>
