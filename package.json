@@ -5,17 +5,10 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev --port 8787",
-    "dev:local": "wrangler dev --local --port 8787",
-    "deploy": "wrangler deploy",
-    "deploy:dry": "wrangler deploy --dry-run",
+    "start": "node server.mjs",
+    "dev": "node server.mjs",
     "setup-webhook": "node scripts/setup-webhook.mjs",
-    "delete-webhook": "node scripts/delete-webhook.mjs",
-    "logs": "wrangler tail",
-    "kv:create": "wrangler kv:namespace create BOT_KV",
-    "kv:create:preview": "wrangler kv:namespace create BOT_KV --preview",
-    "lint": "eslint src/ --ext .js",
-    "test": "node scripts/test.mjs"
+    "delete-webhook": "node scripts/delete-webhook.mjs"
   },
   "devDependencies": {
     "wrangler": "^3.0.0",

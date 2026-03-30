@@ -1,306 +1,216 @@
-// AI Module — Cloudflare Workers AI (Llama 3.1 8B)
-// Production: env.AI.run() — free 10,000 neurons/day on Cloudflare GPUs
-// Local: smart rule-based fallback engine
+// AI Module — OpenRouter (primary) + Groq (fallback)
+// By Md Salman Biswas
 
-const SYSTEM_PROMPT = `You are DevMind, a smart and friendly AI assistant for developers.
-You help with coding questions, debugging, code review, and explaining programming concepts.
-Keep answers concise and practical. Format for Telegram using Markdown.
-Use code blocks for code. Be direct, helpful, and professional. Max 2500 characters.`;
+// Keys loaded from env — set OPENROUTER_KEY and GROQ_KEY in your environment or wrangler.toml secrets
+const OPENROUTER_KEY = process.env?.OPENROUTER_KEY || globalThis.OPENROUTER_KEY || '';
+const GROQ_KEY = process.env?.GROQ_KEY || globalThis.GROQ_KEY || '';
 
-// Rule-based fallback for local testing
-function ruleBasedAI(prompt) {
-  const p = prompt.toLowerCase().trim();
+const SYSTEM_PROMPT = `You are a highly advanced AI coding agent created by Md Salman Biswas. You're an expert in everything — programming, debugging, system design, DevOps, algorithms, data science, web dev, mobile, databases, security, and more.
 
-  if (p.match(/^(hi|hello|hey|howdy|sup)\b/))
-    return '👋 *Hello!* I\'m DevMind. Ask me anything about coding, or use /help to see all commands.';
+Key traits:
+- Talk like a real human dev — casual, clear, direct. No robotic or overly formal language.
+- For coding tasks: write complete, production-ready, clean code. Always include working examples.
+- For general questions: be concise and to the point. No fluff.
+- Use Telegram Markdown formatting (bold with *, code blocks with \`\`\`language).
+- You can generate any file type: HTML, CSS, JS, Python, React, Vue, Node.js, etc.
+- When generating landing pages or websites, write complete, stunning single-file HTML with embedded CSS/JS.
+- Never refuse coding tasks. You can build anything.
+- Max response: 3800 characters for Telegram messages. If the output would exceed this, say "I'll create a file for this" and the system handles it automatically.`;
 
-  if (p.includes('async') && p.includes('await')) return `*Async/Await* handles asynchronous code cleanly:
-
-\`\`\`js
-// Callback (messy)
-fetch(url, (err, data) => { ... });
-
-// Promise chain
-fetch(url).then(r => r.json()).then(data => ...);
-
-// Async/await (cleanest)
-async function getData(url) {
-  const res = await fetch(url);
-  return await res.json();
-}
-\`\`\`
-
-Under the hood it uses Promises. Use \`try/catch\` for error handling.`;
-
-  if (p.includes('fibonacci') || p.includes('fib')) return `*Fibonacci* — three ways:
-
-\`\`\`js
-// Recursive (slow — O(2^n))
-const fib = n => n <= 1 ? n : fib(n-1) + fib(n-2);
-
-// Memoized (fast — O(n))
-function fib(n, m = {}) {
-  if (n in m) return m[n];
-  if (n <= 1) return n;
-  return m[n] = fib(n-1,m) + fib(n-2,m);
-}
-
-// Iterative (best — O(n) time, O(1) space)
-function fib(n) {
-  let [a, b] = [0, 1];
-  for (let i = 0; i < n; i++) [a,b] = [b, a+b];
-  return a;
-}
-\`\`\``;
-
-  if (p.includes('sort') && p.includes('array')) return `*Sorting arrays* in JavaScript:
-
-\`\`\`js
-// Numbers (ascending)
-[3,1,4,1,5].sort((a, b) => a - b);  // [1,1,3,4,5]
-
-// Numbers (descending)
-[3,1,4].sort((a, b) => b - a);       // [4,3,1]
-
-// Strings
-['banana','apple'].sort();           // alphabetical
-
-// Objects by property
-users.sort((a, b) => a.age - b.age);
-\`\`\``;
-
-  if (p.includes('reverse') && p.includes('string')) return `*Reverse a string:*
-
-\`\`\`js
-// JavaScript
-'hello'.split('').reverse().join('')  // 'olleh'
-
-// ES2023 (toReversed doesn't work on strings, use split)
-[...'hello'].reverse().join('')
-\`\`\`
-
-\`\`\`python
-# Python
-s[::-1]   # 'olleh'
-''.join(reversed(s))
-\`\`\``;
-
-  if (p.includes('big o') || p.includes('time complexity')) return `*Big O Complexity* — fastest to slowest:
-
-| O(1) | Constant | Array index |
-| O(log n) | Logarithmic | Binary search |
-| O(n) | Linear | Single loop |
-| O(n log n) | Linearithmic | Merge sort |
-| O(n²) | Quadratic | Nested loops |
-| O(2ⁿ) | Exponential | Recursive fib |
-
-*Goal:* Always prefer O(1) or O(log n).`;
-
-  if (p.includes('git')) return `*Essential Git Commands:*
-
-\`\`\`bash
-git init / git clone <url>
-git add . && git commit -m "msg"
-git push origin main / git pull
-git branch feat / git checkout feat
-git merge feat / git rebase main
-git stash / git stash pop
-git log --oneline --graph
-git diff / git status
-git reset --hard HEAD~1   # undo last commit
-git cherry-pick <hash>
-\`\`\``;
-
-  if (p.includes('docker')) return `*Docker quick reference:*
-
-\`\`\`bash
-docker build -t myapp .
-docker run -p 3000:3000 myapp
-docker ps                    # list running
-docker exec -it <id> sh      # enter container
-docker-compose up -d
-
-# Dockerfile
-FROM node:20-alpine
-WORKDIR /app
-COPY package*.json .
-RUN npm ci --production
-COPY . .
-CMD ["node", "server.js"]
-\`\`\``;
-
-  if (p.includes('sql') && p.includes('join')) return `*SQL JOINs:*
-
-\`\`\`sql
--- INNER: matching rows only
-SELECT * FROM users u
-INNER JOIN orders o ON u.id = o.user_id;
-
--- LEFT: all users, even without orders
-SELECT * FROM users u
-LEFT JOIN orders o ON u.id = o.user_id;
-
--- FULL OUTER: everything
-SELECT * FROM users u
-FULL OUTER JOIN orders o ON u.id = o.user_id;
-\`\`\``;
-
-  if (p.includes('promise')) return `*Promises in JavaScript:*
-
-\`\`\`js
-const p = new Promise((resolve, reject) => {
-  setTimeout(() => resolve('done!'), 1000);
-});
-
-// Then/catch
-p.then(val => console.log(val))
- .catch(err => console.error(err));
-
-// Parallel execution
-const [a, b] = await Promise.all([p1, p2]);
-
-// First to resolve
-const fastest = await Promise.race([p1, p2]);
-
-// All settle (no throw)
-const results = await Promise.allSettled([p1, p2]);
-\`\`\``;
-
-  if ((p.includes('css') || p.includes('flex')) && p.includes('center')) return `*CSS Centering — modern ways:*
-
-\`\`\`css
-/* Flexbox */
-.container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-/* Grid (simplest) */
-.container {
-  display: grid;
-  place-items: center;
-  height: 100vh;
-}
-
-/* Absolute positioning */
-.item {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-}
-\`\`\``;
-
-  if (p.includes('react')) return `*React* — core concepts:
-
-*Components:* Reusable UI pieces
-*JSX:* HTML-like syntax in JS
-*State:* Data that changes (\`useState\`)
-*Props:* Data passed to child components
-*Effects:* Side effects (\`useEffect\`)
-
-\`\`\`jsx
-function Counter() {
-  const [count, setCount] = React.useState(0);
-  return (
-    <button onClick={() => setCount(c => c + 1)}>
-      Count: {count}
-    </button>
-  );
-}
-\`\`\``;
-
-  if (p.includes('typescript') || p.includes(' ts ')) return `*TypeScript* basics:
-
-\`\`\`ts
-// Types
-type User = { id: number; name: string; email?: string };
-
-// Interface
-interface API {
-  get(url: string): Promise<Response>;
-}
-
-// Generic function
-function first<T>(arr: T[]): T | undefined {
-  return arr[0];
-}
-
-// Union & intersection
-type ID = string | number;
-type Admin = User & { role: 'admin' };
-
-// Enum
-enum Status { Active, Inactive, Pending }
-\`\`\``;
-
-  return `🤖 *DevMind AI*
-
-I'm running in *local mode*. In production on Cloudflare Workers, I use *Llama 3.1 8B* for real AI answers.
-
-Try these:
-\`/ask what is async await\`
-\`/ask how to sort array\`
-\`/ask git commands\`
-\`/ask big O notation\`
-\`/ask how docker works\`
-\`/ask css center element\`
-\`/ask typescript basics\`
-\`/ask react hooks\``;
-}
-
-export async function askAI(env, prompt) {
-  // Production: Cloudflare Workers AI — Llama 3.1 8B (free tier!)
-  if (env.AI) {
-    try {
-      const response = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: prompt.slice(0, 3000) },
-        ],
-        max_tokens: 800,
+async function callOpenRouter(messages, model = 'anthropic/claude-3.5-sonnet') {
+  try {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENROUTER_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://t.me/SalmanDevToolsBot',
+        'X-Title': 'Salman Dev Bot',
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        max_tokens: 4000,
         temperature: 0.7,
-      });
-      const text = response?.response || response?.result?.response || '';
-      return text.trim() || null;
-    } catch (err) {
-      console.error('Workers AI error:', err.message);
-      // Fall through to rule-based
-    }
+      }),
+    });
+    if (!res.ok) throw new Error(`OpenRouter ${res.status}`);
+    const data = await res.json();
+    return data?.choices?.[0]?.message?.content?.trim() || null;
+  } catch (err) {
+    console.error('OpenRouter error:', err.message);
+    return null;
   }
-  return ruleBasedAI(prompt);
+}
+
+async function callGroq(messages, model = 'llama-3.3-70b-versatile') {
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${GROQ_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        max_tokens: 4000,
+        temperature: 0.7,
+      }),
+    });
+    if (!res.ok) throw new Error(`Groq ${res.status}`);
+    const data = await res.json();
+    return data?.choices?.[0]?.message?.content?.trim() || null;
+  } catch (err) {
+    console.error('Groq error:', err.message);
+    return null;
+  }
+}
+
+export async function askAI(env, userMessage, systemOverride = null) {
+  const messages = [
+    { role: 'system', content: systemOverride || SYSTEM_PROMPT },
+    { role: 'user', content: userMessage.slice(0, 6000) },
+  ];
+
+  // Try OpenRouter first (claude-3.5-sonnet)
+  let answer = await callOpenRouter(messages);
+
+  // Fallback to Groq
+  if (!answer) {
+    answer = await callGroq(messages);
+  }
+
+  return answer;
+}
+
+export async function askAIWithHistory(env, history, userMessage) {
+  const messages = [
+    { role: 'system', content: SYSTEM_PROMPT },
+    ...history.slice(-8),
+    { role: 'user', content: userMessage.slice(0, 4000) },
+  ];
+
+  let answer = await callOpenRouter(messages);
+  if (!answer) answer = await callGroq(messages);
+  return answer;
 }
 
 export async function reviewCode(env, code) {
-  const prompt = `Review this code concisely:
-1. What it does (1 line)
-2. Issues/bugs found
-3. Specific improvements
-4. Fixed version if needed
-
-\`\`\`
-${code.slice(0, 2000)}
-\`\`\``;
-  return askAI(env, prompt);
+  return askAI(env, `Do a thorough code review of this:\n\`\`\`\n${code.slice(0, 3000)}\n\`\`\`\n\nCover: what it does, bugs, security issues, performance, and show the improved version.`);
 }
 
 export async function explainConcept(env, concept) {
-  return askAI(env, `Explain "${concept.slice(0, 200)}" for a developer in simple terms. Include a short code example if relevant.`);
+  return askAI(env, `Explain "${concept.slice(0, 300)}" like you're talking to a fellow dev. Include a practical code example.`);
 }
 
 export async function fixCode(env, code) {
-  return askAI(env, `Find and fix bugs in this code. Show the fixed version with a brief explanation of what was wrong:\n\`\`\`\n${code.slice(0, 2000)}\n\`\`\``);
+  return askAI(env, `Fix all bugs in this code and explain what was wrong:\n\`\`\`\n${code.slice(0, 3000)}\n\`\`\``);
 }
 
 export async function generateCode(env, description) {
-  return askAI(env, `Write clean, production-ready code for: ${description.slice(0, 500)}\nInclude brief comments for complex parts.`);
+  return askAI(env, `Write complete, production-ready code for: ${description.slice(0, 800)}\n\nMake it clean, well-commented, and actually work.`);
 }
 
 export async function summarizeText(env, text) {
-  return askAI(env, `Summarize this text in 3-5 bullet points:\n\n${text.slice(0, 3000)}`);
+  return askAI(env, `Summarize this in clear bullet points:\n\n${text.slice(0, 4000)}`);
 }
 
 export async function translateText(env, text, targetLang) {
-  return askAI(env, `Translate the following text to ${targetLang}. Return only the translation:\n\n${text.slice(0, 2000)}`);
+  return askAI(env, `Translate to ${targetLang}. Return only the translation:\n\n${text.slice(0, 3000)}`);
+}
+
+export async function generateLandingPage(env, description) {
+  const prompt = `Create a complete, stunning single-file HTML landing page for: ${description.slice(0, 500)}
+
+Requirements:
+- Single HTML file with embedded CSS and JS
+- Modern, professional design with gradients, animations
+- Mobile responsive
+- Clean sections: hero, features, CTA
+- No external dependencies except Google Fonts
+- Production ready
+
+Return ONLY the complete HTML code, nothing else.`;
+
+  const messages = [
+    { role: 'system', content: 'You are an expert web designer. Generate complete, beautiful HTML files only. No explanation, just the HTML code.' },
+    { role: 'user', content: prompt },
+  ];
+
+  let html = await callOpenRouter(messages, 'anthropic/claude-3.5-sonnet');
+  if (!html) html = await callGroq(messages);
+
+  // Strip markdown code blocks if present
+  if (html) {
+    html = html.replace(/^```html\n?/i, '').replace(/\n?```$/i, '').trim();
+    if (!html.includes('<!DOCTYPE') && !html.includes('<html')) {
+      html = `<!DOCTYPE html>\n<html>\n${html}\n</html>`;
+    }
+  }
+  return html;
+}
+
+export async function debugCode(env, code, error) {
+  return askAI(env, `Debug this code. Error: "${error}"\n\nCode:\n\`\`\`\n${code.slice(0, 2500)}\n\`\`\`\n\nFind the exact cause and give the fixed code.`);
+}
+
+export async function optimizeCode(env, code) {
+  return askAI(env, `Optimize this code for performance, readability, and best practices:\n\`\`\`\n${code.slice(0, 2500)}\n\`\`\`\n\nShow before/after and explain the improvements.`);
+}
+
+export async function generateTests(env, code) {
+  return askAI(env, `Write comprehensive unit tests for this code:\n\`\`\`\n${code.slice(0, 2500)}\n\`\`\`\n\nUse appropriate testing framework and cover edge cases.`);
+}
+
+export async function generateDocumentation(env, code) {
+  return askAI(env, `Generate complete documentation for this code:\n\`\`\`\n${code.slice(0, 2500)}\n\`\`\`\n\nInclude: overview, parameters, return values, examples, edge cases.`);
+}
+
+export async function convertCode(env, code, fromLang, toLang) {
+  return askAI(env, `Convert this ${fromLang} code to ${toLang}. Keep the same logic, use idiomatic ${toLang} patterns:\n\`\`\`${fromLang}\n${code.slice(0, 2500)}\n\`\`\``);
+}
+
+export async function analyzeComplexity(env, code) {
+  return askAI(env, `Analyze the time and space complexity of this code:\n\`\`\`\n${code.slice(0, 2500)}\n\`\`\`\n\nBreak it down function by function, explain the Big O, and suggest optimizations.`);
+}
+
+export async function securityAudit(env, code) {
+  return askAI(env, `Do a security audit of this code:\n\`\`\`\n${code.slice(0, 2500)}\n\`\`\`\n\nFind vulnerabilities, rate severity, and show how to fix each one.`);
+}
+
+export async function generateRegex(env, description) {
+  return askAI(env, `Write a regex pattern for: ${description}\n\nProvide the pattern, explanation of each part, and test examples in multiple languages (JS, Python, etc).`);
+}
+
+export async function generateSQL(env, description) {
+  return askAI(env, `Write SQL for: ${description}\n\nInclude: the query, explanation, and how to optimize it if relevant.`);
+}
+
+export async function generateAPI(env, description) {
+  return askAI(env, `Design and write a complete REST API for: ${description}\n\nInclude: endpoints, request/response format, authentication approach, and code for at least Express.js or FastAPI.`);
+}
+
+export async function chatWithMemory(env, userId, message, state) {
+  // Get conversation history
+  const historyKey = `chat:${userId}`;
+  let history = [];
+  try {
+    const stored = await state.get(historyKey);
+    if (stored) history = JSON.parse(stored);
+  } catch {}
+
+  const answer = await askAIWithHistory(env, history, message);
+  if (!answer) return null;
+
+  // Update history (keep last 10 messages)
+  history.push({ role: 'user', content: message });
+  history.push({ role: 'assistant', content: answer });
+  if (history.length > 20) history = history.slice(-20);
+
+  try {
+    await state.set(historyKey, JSON.stringify(history), 3600);
+  } catch {}
+
+  return answer;
 }

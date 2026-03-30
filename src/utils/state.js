@@ -39,14 +39,16 @@ export async function incrementStat(state, key) {
 }
 
 export async function getStats(state) {
-  const [messages, commands, ai_calls] = await Promise.all([
+  const [messages, commands, ai_calls, files_sent] = await Promise.all([
     state.get('stat:messages'),
     state.get('stat:commands'),
     state.get('stat:ai_calls'),
+    state.get('stat:files_sent'),
   ]);
   return {
     messages: parseInt(messages || 0),
     commands: parseInt(commands || 0),
     ai_calls: parseInt(ai_calls || 0),
+    files_sent: parseInt(files_sent || 0),
   };
 }
