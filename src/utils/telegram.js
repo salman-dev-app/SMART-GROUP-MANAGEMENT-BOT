@@ -17,6 +17,10 @@ function clean(obj) {
 }
 
 export async function sendMessage(token, chatId, text, opts = {}) {
+  // Truncate if too long for Telegram (4096 char limit)
+  if (text.length > 4000) {
+    text = text.slice(0, 3990) + '\n\n`...`';
+  }
   return call(token, 'sendMessage', {
     chat_id: chatId,
     text,
@@ -28,6 +32,7 @@ export async function sendMessage(token, chatId, text, opts = {}) {
 }
 
 export async function editMessageText(token, chatId, messageId, text, opts = {}) {
+  if (text.length > 4000) text = text.slice(0, 3990) + '\n\n`...`';
   return call(token, 'editMessageText', {
     chat_id: chatId,
     message_id: messageId,
@@ -36,6 +41,44 @@ export async function editMessageText(token, chatId, messageId, text, opts = {})
     reply_markup: opts.replyMarkup,
     disable_web_page_preview: true,
   });
+}
+
+export async function sendDocument(token, chatId, filename, content, caption, mimeType = 'text/plain') {
+  const boundary = '----FormBoundary' + Math.random().toString(36).slice(2);
+  const encoder = new TextEncoder();
+
+  let bodyParts = [];
+
+  // chat_id field
+  bodyParts.push(encoder.encode(`--${boundary}\r\nContent-Disposition: form-data; name="chat_id"\r\n\r\n${chatId}\r\n`));
+
+  // caption field
+  if (caption) {
+    bodyParts.push(encoder.encode(`--${boundary}\r\nContent-Disposition: form-data; name="caption"\r\n\r\n${caption}\r\n`));
+    bodyParts.push(encoder.encode(`--${boundary}\r\nContent-Disposition: form-data; name="parse_mode"\r\n\r\nMarkdown\r\n`));
+  }
+
+  // document field
+  const fileContent = typeof content === 'string' ? encoder.encode(content) : content;
+  bodyParts.push(encoder.encode(`--${boundary}\r\nContent-Disposition: form-data; name="document"; filename="${filename}"\r\nContent-Type: ${mimeType}\r\n\r\n`));
+  bodyParts.push(fileContent);
+  bodyParts.push(encoder.encode(`\r\n--${boundary}--\r\n`));
+
+  // Combine all parts
+  const totalLength = bodyParts.reduce((sum, p) => sum + p.length, 0);
+  const body = new Uint8Array(totalLength);
+  let offset = 0;
+  for (const part of bodyParts) {
+    body.set(part, offset);
+    offset += part.length;
+  }
+
+  const res = await fetch(`${API(token)}/sendDocument`, {
+    method: 'POST',
+    headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },
+    body: body.buffer,
+  });
+  return res.json();
 }
 
 export async function answerCallbackQuery(token, queryId, text = '', alert = false) {

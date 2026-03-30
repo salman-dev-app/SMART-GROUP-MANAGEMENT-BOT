@@ -1,7 +1,6 @@
 /**
- * DevMind — Local Node.js Test Server
- * Wraps the Cloudflare Workers bot for local testing.
- * Usage: BOT_TOKEN=<token> node server.mjs
+ * Salman Dev Bot — Local Node.js Server
+ * Created by Md Salman Biswas
  */
 
 import http from 'http';
@@ -10,7 +9,25 @@ const BOT_TOKEN    = process.env.BOT_TOKEN    || '8410498376:AAFU4D_A7EJByQI27bU
 const BOT_USERNAME = process.env.BOT_USERNAME || 'SalmanDevToolsBot';
 const PORT         = parseInt(process.env.PORT || '8787', 10);
 
-// In-memory KV store (mirrors Cloudflare KV)
+// Load .env.local if it exists (for local dev — never commit this file)
+try {
+  const fs = await import('fs');
+  const path = await import('path');
+  const envFile = path.join(process.cwd(), '.env.local');
+  if (fs.existsSync(envFile)) {
+    const lines = fs.readFileSync(envFile, 'utf8').split('\n');
+    for (const line of lines) {
+      const [key, ...rest] = line.split('=');
+      if (key && rest.length) process.env[key.trim()] = rest.join('=').trim();
+    }
+  }
+} catch {}
+
+// Inject API keys into global scope for the AI module
+globalThis.OPENROUTER_KEY = process.env.OPENROUTER_KEY || '';
+globalThis.GROQ_KEY       = process.env.GROQ_KEY       || '';
+
+// In-memory KV store
 const kvStore = new Map();
 const kvNamespace = {
   async get(key) {
@@ -26,13 +43,11 @@ const kvNamespace = {
   async delete(key) { kvStore.delete(key); },
 };
 
-// env shim — no AI binding locally (falls back to rule-based)
 const env = {
   BOT_TOKEN,
   BOT_USERNAME,
   BOT_KV: kvNamespace,
   WEBHOOK_SECRET: '',
-  // AI: undefined (local fallback kicks in automatically)
 };
 
 const { default: worker } = await import('./src/index.js');
@@ -64,25 +79,20 @@ const server = http.createServer(async (req, res) => {
     fetchResponse.headers.forEach((value, key) => res.setHeader(key, value));
     res.end(Buffer.from(await fetchResponse.arrayBuffer()));
   } catch (err) {
-    console.error('[Server Error]', err);
+    console.error('[Error]', err);
     res.statusCode = 500;
     res.end('Internal Server Error');
   }
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n🤖 DevMind server is running!`);
-  console.log(`   Local:    http://localhost:${PORT}`);
-  console.log(`   Health:   http://localhost:${PORT}/health`);
-  console.log(`   Webhook:  http://localhost:${PORT}/webhook`);
-  console.log(`   Setup:    http://localhost:${PORT}/setup`);
-  console.log(`\n   BOT_TOKEN:    ${BOT_TOKEN.slice(0, 12)}...`);
-  console.log(`   BOT_USERNAME: ${BOT_USERNAME}`);
-  console.log(`   Runtime:      Node.js ${process.version} (local)`);
-  console.log(`\n   AI: Local rule-based fallback (deploy to Cloudflare for Llama 3.1 8B)\n`);
+  console.log(`\n  Salman Dev Bot running`);
+  console.log(`  http://localhost:${PORT}`);
+  console.log(`  Webhook: http://localhost:${PORT}/webhook`);
+  console.log(`  Setup:   http://localhost:${PORT}/setup\n`);
 });
 
 server.on('error', err => {
-  console.error('[HTTP Server Error]', err);
+  console.error('[HTTP Error]', err);
   process.exit(1);
 });
