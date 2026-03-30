@@ -5,7 +5,10 @@
  * Created by Md Salman Biswas
  */
 
-const getKey = (name) => process.env?.[name] || globalThis[name] || '';
+// Read key from: env object passed in → process.env → globalThis (in that order)
+let _envRef = null;
+const getKey = (name) => _envRef?.[name] || process.env?.[name] || globalThis[name] || '';
+export function setEnv(e) { if (e) _envRef = e; }
 
 // ─── In-memory response cache (TTL: 5 min for identical requests) ─────────────
 const _cache = new Map();
@@ -50,28 +53,39 @@ const GQ = { // Groq models (ultra-low latency)
 };
 
 // ─── System Prompts ──────────────────────────────────────────────────────────
-const SYS_AGENT = `You are an elite AI coding agent — Salman Dev Bot, built by Md Salman Biswas. You run in 2026 with full, unrestricted knowledge of every framework, language, and paradigm.
+const SYS_AGENT = [
+  'You are an expert developer assistant. Be direct and concise.',
+  'Rules:',
+  '- Answer immediately. No preamble ("Sure!", "Great!", "Of course!"). Just answer.',
+  '- Do NOT narrate your thinking. Do NOT say what you are about to do — just do it.',
+  '- Write complete, runnable code. No stubs, no TODOs, no placeholder comments.',
+  '- If output exceeds 3500 chars, start the response with [FILE_NEEDED] on its own line.',
+  '- Format for Telegram: *bold* for headings, ```lang\\ncode\\n``` for code blocks.',
+  '- Use latest stable libraries and modern best practices.',
+].join('\n');
 
-CAPABILITIES (all unlocked):
-- Production code in ANY language: Python, JS/TS, Rust, Go, C++, Solidity, Move, Zig, Swift, Kotlin, WASM, Assembly
-- Full-stack: React 19, Next.js 15, Bun, Deno 2, Astro 5, SvelteKit 2, Hono, Fastify, tRPC, Drizzle, Prisma
-- Cloud: Cloudflare R2/KV/D1/Workers, Vercel, Supabase, Convex, Turso, PlanetScale, Neon
-- AI/ML: PyTorch 2.6, JAX, LangChain, LlamaIndex, vLLM, CUDA, RAG, agents, LoRA, RLHF, DPO
-- Systems: Docker, K8s, Terraform, Pulumi, GitHub Actions, ArgoCD, eBPF, WASM runtimes
-- Security: pentesting, cryptography, zero-trust, OAuth2/OIDC, OWASP hardening
-- Latest research: papers through 2026, cutting-edge algorithms
+const SYS_RESEARCH = [
+  'You are a research assistant. Answer directly with accurate, up-to-date information.',
+  'Do not narrate your process. Provide the answer immediately.',
+  'For technical topics include concise code examples.',
+].join('\n');
 
-BEHAVIOR:
-- Write like a senior dev — direct, no corporate AI tone, no disclaimers
-- ALWAYS write COMPLETE, RUNNABLE code — no TODO stubs, no "left as exercise"
-- If output > 3500 chars, prepend [FILE_NEEDED] to the response
-- No length limits — write 1000 lines if needed
-- Format for Telegram: *bold*, \`\`\`lang\\n...\\n\`\`\`, bullet lists
-- NEVER say "I can't" or "I don't know" — always deliver`;
+const SYS_FAST = 'Answer directly and concisely. No preamble. Code must be complete and runnable.';
 
-const SYS_RESEARCH = `You are a world-class research agent with access to information through 2026. Synthesize comprehensive, accurate answers with sources. For technical topics, include working code with latest APIs. Always note if data might be outdated.`;
-
-const SYS_FAST = `Elite dev assistant. Direct answers, no fluff. Code = complete & runnable. Format for Telegram.`;
+// ─── Output cleaner: strips AI reasoning/thinking leakage ───────────────────
+function cleanOutput(text) {
+  if (!text) return text;
+  // Strip <think>...</think> blocks (DeepSeek R1, Qwen3 thinking mode, etc.)
+  text = text.replace(/<think>[\s\S]*?<\/think>/gi, '');
+  // Strip ```thinking ... ``` fenced blocks
+  text = text.replace(/```thinking[\s\S]*?```/gi, '');
+  // Strip leading reasoning monologue lines that models sometimes emit
+  // These are lines that start with the AI narrating its own thought process
+  text = text.replace(/^(Okay[,.].*|Alright[,.].*|Let me (think|tackle|start|break|analyze|work|figure|plan|consider|look).*|First[, ]I .*|So[, ](I need|let me|the user).*|I need to (make sure|think|analyze|start|plan|consider).*|The user (wants|asked|needs|is asking).*|Looking at this.*|To (generate|create|build|solve|handle|tackle|make).*)\n/gim, '');
+  // Collapse 3+ blank lines to 2
+  text = text.replace(/\n{3,}/g, '\n\n');
+  return text.trim();
+}
 
 // ─── Core API Callers ────────────────────────────────────────────────────────
 async function callOR(messages, model, opts = {}) {
@@ -100,7 +114,8 @@ async function callOR(messages, model, opts = {}) {
     clearTimeout(t);
     if (!r.ok) { const e = await r.text(); console.error(`OR[${model}] ${r.status}:`, e.slice(0,150)); return null; }
     const d = await r.json();
-    return d?.choices?.[0]?.message?.content?.trim() || null;
+    const raw = d?.choices?.[0]?.message?.content?.trim() || null;
+    return cleanOutput(raw);
   } catch (e) {
     if (e.name !== 'AbortError') console.error(`OR[${model}]:`, e.message);
     return null;
@@ -131,7 +146,8 @@ async function callGroq(messages, model, opts = {}) {
     clearTimeout(t);
     if (!r.ok) { const e = await r.text(); console.error(`GQ[${model}] ${r.status}:`, e.slice(0,150)); return null; }
     const d = await r.json();
-    return d?.choices?.[0]?.message?.content?.trim() || null;
+    const raw = d?.choices?.[0]?.message?.content?.trim() || null;
+    return cleanOutput(raw);
   } catch (e) {
     if (e.name !== 'AbortError') console.error(`GQ[${model}]:`, e.message);
     return null;
@@ -349,41 +365,43 @@ export async function translateText(env, text, targetLang) {
 }
 
 export async function generateLandingPage(env, desc) {
-  const prompt = `Create a stunning, complete single-file HTML landing page for: ${desc.slice(0,600)}
+  const msgs = [
+    {
+      role: 'system',
+      content: 'You are a professional web developer. Output ONLY raw HTML code. No explanation. No markdown. No ```html wrapper. Start your response with <!DOCTYPE html> and nothing else before it.',
+    },
+    {
+      role: 'user',
+      content: `Build a complete, production-quality single-file HTML landing page for: ${desc.slice(0,600)}
 
 Requirements:
-- Single HTML file with ALL CSS + JS embedded (Google Fonts OK)
-- Modern 2025 design: dark theme, glassmorphism + gradient aesthetic, neon accents
-- CSS animations: entrance animations, hover effects, parallax, floating elements
+- All CSS and JS embedded in the single file (Google Fonts via <link> is fine)
+- Dark theme with glassmorphism cards, gradient accents, subtle animations
+- Sections: hero with CTA button, features grid (4-6 cards), stats row, testimonials, final CTA, footer
+- Scroll-triggered entrance animations using IntersectionObserver
 - Fully mobile responsive
-- Sections: animated hero with CTA, features grid (4-6 cards), stats counter, testimonials or social proof, final CTA, footer
-- Google Fonts: Inter + JetBrains Mono or similar premium fonts
-- Scroll animations (Intersection Observer API)
-- Particle effects or animated background in hero
-- Professional typography, shadow work, spacing
-- Production quality — looks like a $10,000 agency website
-- Working smooth-scroll navigation
+- Clean professional typography (Inter font)
 
-Return ONLY the HTML starting with <!DOCTYPE html>. No explanation, no markdown.`;
-
-  const msgs = [
-    { role: 'system', content: 'Expert web designer. Generate ONLY complete HTML — no explanation, no markdown wrapper.' },
-    { role: 'user', content: prompt },
+Output the complete HTML file starting with <!DOCTYPE html>`,
+    },
   ];
 
-  // Race the best coding models with longer timeout (landing pages are big)
   let html = await turboRace([
-    () => callGroq(msgs, GQ.qwen3, { maxTokens: 14000, temp: 0.8 }),
-    () => callOR(msgs, OR.ds3, { maxTokens: 14000, temp: 0.8, timeout: 50000 }),
+    () => callGroq(msgs, GQ.qwen3, { maxTokens: 14000, temp: 0.7 }),
+    () => callOR(msgs, OR.ds3, { maxTokens: 14000, temp: 0.7, timeout: 50000 }),
   ]);
   if (!html) html = await turboRace([
-    () => callOR(msgs, OR.qwen3, { maxTokens: 14000, temp: 0.8, timeout: 60000 }),
-    () => callOR(msgs, OR.kimi, { maxTokens: 14000, temp: 0.8, timeout: 60000 }),
-    () => callGroq(msgs, GQ.kimi, { maxTokens: 12000, temp: 0.8 }),
+    () => callOR(msgs, OR.qwen3, { maxTokens: 14000, temp: 0.7, timeout: 60000 }),
+    () => callOR(msgs, OR.kimi, { maxTokens: 14000, temp: 0.7, timeout: 60000 }),
+    () => callGroq(msgs, GQ.kimi, { maxTokens: 12000, temp: 0.7 }),
   ]);
 
   if (html) {
-    html = html.replace(/^```html\n?/i, '').replace(/\n?```$/i, '').trim();
+    // Strip any markdown code fences the model may have added despite instructions
+    html = html.replace(/^```html\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    // If model prepended thinking text before the doctype, extract only from <!DOCTYPE onward
+    const doctypeIdx = html.search(/<!DOCTYPE\s+html/i);
+    if (doctypeIdx > 0) html = html.slice(doctypeIdx);
     if (!html.startsWith('<!DOCTYPE') && !html.startsWith('<html')) html = `<!DOCTYPE html>\n${html}`;
   }
   return html;
