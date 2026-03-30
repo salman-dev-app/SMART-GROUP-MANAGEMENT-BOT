@@ -75,7 +75,8 @@ async function callOpenRouter(messages, modelId, opts = {}) {
   if (!key) return null;
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 60000);
+    // Faster timeout — 45s max (was 60s)
+    const timeout = setTimeout(() => controller.abort(), opts.timeout || 45000);
 
     const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -104,11 +105,7 @@ async function callOpenRouter(messages, modelId, opts = {}) {
     const data = await res.json();
     return data?.choices?.[0]?.message?.content?.trim() || null;
   } catch (err) {
-    if (err.name === 'AbortError') {
-      console.error(`OpenRouter [${modelId}] timeout`);
-    } else {
-      console.error(`OpenRouter [${modelId}] error:`, err.message);
-    }
+    if (err.name !== 'AbortError') console.error(`OpenRouter [${modelId}]:`, err.message);
     return null;
   }
 }
@@ -119,17 +116,9 @@ async function callGroq(messages, modelId, opts = {}) {
   if (!key) return null;
   try {
     const isCompound = modelId === GROQ_MODELS.compound || modelId === GROQ_MODELS.compoundM;
-    const body = {
-      model: modelId,
-      messages,
-      max_tokens: opts.maxTokens || 6000,
-      temperature: opts.temperature ?? 0.7,
-    };
-    // Groq compound has built-in web search via tool_use — no explicit tools needed
-    // It auto-searches when needed based on the query
-
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), isCompound ? 55000 : 30000);
+    // Groq is fast — 25s for normal, 50s for compound (it does web search)
+    const timeout = setTimeout(() => controller.abort(), isCompound ? 50000 : 25000);
 
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -137,7 +126,12 @@ async function callGroq(messages, modelId, opts = {}) {
         'Authorization': `Bearer ${key}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        model: modelId,
+        messages,
+        max_tokens: opts.maxTokens || 6000,
+        temperature: opts.temperature ?? 0.7,
+      }),
       signal: controller.signal,
     });
     clearTimeout(timeout);
@@ -150,73 +144,113 @@ async function callGroq(messages, modelId, opts = {}) {
     const data = await res.json();
     return data?.choices?.[0]?.message?.content?.trim() || null;
   } catch (err) {
-    if (err.name === 'AbortError') {
-      console.error(`Groq [${modelId}] timeout`);
-    } else {
-      console.error(`Groq [${modelId}] error:`, err.message);
-    }
+    if (err.name !== 'AbortError') console.error(`Groq [${modelId}]:`, err.message);
     return null;
   }
 }
 
-// ─── Smart Router — tries models in priority order ────────────────────────────
+// ─── Race helper — fires N calls in parallel, returns FIRST valid result ─────
+async function raceFirst(fns) {
+  return new Promise((resolve) => {
+    let settled = false;
+    let pending = fns.length;
+    if (pending === 0) { resolve(null); return; }
+
+    fns.forEach(fn => {
+      fn().then(result => {
+        if (!settled && result && result.length > 10) {
+          settled = true;
+          resolve(result);
+        }
+        if (--pending === 0 && !settled) resolve(null);
+      }).catch(() => {
+        if (--pending === 0 && !settled) resolve(null);
+      });
+    });
+  });
+}
+
+// ─── Smart Router — parallel racing for maximum speed ────────────────────────
+// Strategy: race the 2-3 best models first; only fall back sequentially if all fail
 async function smartRoute(messages, task = 'general', opts = {}) {
-  let attempts;
+  // Tier 1: race top candidates in parallel — fastest valid response wins
+  let tier1, tier2Fns;
 
   switch (task) {
     case 'coding':
     case 'generate':
-      attempts = [
-        () => callOpenRouter(messages, MODELS.coding, opts),
-        () => callOpenRouter(messages, MODELS.coding2, opts),
-        () => callOpenRouter(messages, MODELS.coding3, opts),
+      tier1 = await raceFirst([
+        () => callOpenRouter(messages, MODELS.coding, opts),    // Qwen3 Coder Plus
+        () => callOpenRouter(messages, MODELS.coding3, opts),   // DeepSeek V3.2 (fastest)
+        () => callGroq(messages, GROQ_MODELS.qwen3, opts),      // Qwen3 32B on Groq (ultra fast)
+      ]);
+      tier2Fns = [
+        () => callOpenRouter(messages, MODELS.coding2, opts),   // Kimi K2.5
         () => callGroq(messages, GROQ_MODELS.kimi, opts),
         () => callGroq(messages, GROQ_MODELS.gpt_oss, opts),
         () => callOpenRouter(messages, MODELS.free, opts),
       ];
       break;
+
     case 'research':
-      attempts = [
-        () => callGroq(messages, GROQ_MODELS.compound, opts),      // has web search!
-        () => callGroq(messages, GROQ_MODELS.compoundM, opts),
+      // Groq Compound has native web search — run it alone (it returns richer results)
+      tier1 = await raceFirst([
+        () => callGroq(messages, GROQ_MODELS.compound, { ...opts, timeout: 50000 }),
+        () => callGroq(messages, GROQ_MODELS.compoundM, { ...opts, timeout: 50000 }),
+      ]);
+      tier2Fns = [
         () => callOpenRouter(messages, MODELS.reasoning, opts),
-        () => callOpenRouter(messages, MODELS.reasoning2, opts),
         () => callGroq(messages, GROQ_MODELS.gpt_oss, opts),
+        () => callOpenRouter(messages, MODELS.reasoning2, opts),
       ];
       break;
+
     case 'reasoning':
     case 'debug':
-      attempts = [
-        () => callOpenRouter(messages, MODELS.reasoning, opts),
-        () => callOpenRouter(messages, MODELS.coding2, opts),
+      tier1 = await raceFirst([
+        () => callOpenRouter(messages, MODELS.reasoning, opts),   // DeepSeek R1 (chain-of-thought)
+        () => callOpenRouter(messages, MODELS.coding3, opts),     // DeepSeek V3.2 (faster)
+      ]);
+      tier2Fns = [
         () => callGroq(messages, GROQ_MODELS.kimi, opts),
-        () => callOpenRouter(messages, MODELS.coding3, opts),
+        () => callOpenRouter(messages, MODELS.coding2, opts),
         () => callGroq(messages, GROQ_MODELS.qwen3, opts),
       ];
       break;
+
     case 'fast':
     case 'chat':
-      attempts = [
-        () => callOpenRouter(messages, MODELS.fast, opts),
-        () => callGroq(messages, GROQ_MODELS.qwen3, opts),
-        () => callGroq(messages, GROQ_MODELS.llama, opts),
+      tier1 = await raceFirst([
+        () => callGroq(messages, GROQ_MODELS.qwen3, opts),       // Groq: ultra fast
+        () => callGroq(messages, GROQ_MODELS.llama, opts),       // Groq: Llama 3.3
+        () => callOpenRouter(messages, MODELS.fast, opts),       // OpenRouter fast
+      ]);
+      tier2Fns = [
         () => callOpenRouter(messages, MODELS.fast2, opts),
         () => callOpenRouter(messages, MODELS.free, opts),
       ];
       break;
+
     case 'landing':
     case 'ui':
-      attempts = [
+      tier1 = await raceFirst([
         () => callOpenRouter(messages, MODELS.coding, opts),
+        () => callOpenRouter(messages, MODELS.coding3, opts),
+      ]);
+      tier2Fns = [
         () => callOpenRouter(messages, MODELS.coding2, opts),
         () => callOpenRouter(messages, MODELS.reasoning2, opts),
         () => callGroq(messages, GROQ_MODELS.gpt_oss, opts),
         () => callOpenRouter(messages, MODELS.free, opts),
       ];
       break;
+
     default:
-      attempts = [
+      tier1 = await raceFirst([
         () => callOpenRouter(messages, MODELS.coding, opts),
+        () => callGroq(messages, GROQ_MODELS.qwen3, opts),
+      ]);
+      tier2Fns = [
         () => callGroq(messages, GROQ_MODELS.compound, opts),
         () => callOpenRouter(messages, MODELS.coding3, opts),
         () => callGroq(messages, GROQ_MODELS.kimi, opts),
@@ -224,8 +258,11 @@ async function smartRoute(messages, task = 'general', opts = {}) {
       ];
   }
 
-  for (const attempt of attempts) {
-    const result = await attempt();
+  if (tier1 && tier1.length > 10) return tier1;
+
+  // Tier 2: sequential fallback
+  for (const fn of tier2Fns) {
+    const result = await fn();
     if (result && result.length > 10) return result;
   }
   return null;
