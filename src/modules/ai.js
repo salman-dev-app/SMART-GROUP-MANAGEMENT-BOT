@@ -1,545 +1,575 @@
 /**
- * AI Engine — Full Agent Mode
- * Primary:  OpenRouter → auto-routes to best available model
- * Fallback: Groq compound (has built-in web search!)
- * Research: Groq compound-beta / Tavily search API
+ * AI Engine v3.0 — MAXIMUM SPEED AGENT
+ * Ultra-fast parallel racing: fires multiple models simultaneously, takes the FIRST valid response
+ * Strategy: No waiting — race the fastest providers head-to-head
+ * Created by Md Salman Biswas
  */
 
-// Keys loaded from env
 const getKey = (name) => process.env?.[name] || globalThis[name] || '';
 
-// ─── Model Roster (2025/2026 — real IDs verified from API) ──────────────────
-const MODELS = {
-  // Flagship coding — best SWE-bench scores
-  coding:    'qwen/qwen3-coder-plus',          // Qwen3 Coder — 1M ctx, coding SOTA
-  coding2:   'moonshotai/kimi-k2.5',           // Kimi K2.5 — 1T params, coding beast
-  coding3:   'deepseek/deepseek-v3.2',         // DeepSeek V3.2 — ultra fast + smart
-  // Reasoning / research
-  reasoning: 'deepseek/deepseek-r1-0528',      // DeepSeek R1 — chain-of-thought reasoning
-  reasoning2:'google/gemini-2.5-pro',          // Gemini 2.5 Pro — 1M ctx, multimodal
-  // Speed / chat
-  fast:      'qwen/qwen3-coder-flash',         // Fast coder
-  fast2:     'deepseek/deepseek-v3.1-terminus',// Fast + smart
-  // Agents
-  agent:     'x-ai/grok-4.1-fast',             // Grok 4.1 — 2M ctx, agentic
+// ─── In-memory response cache (TTL: 5 min for identical requests) ─────────────
+const _cache = new Map();
+function cacheGet(key) {
+  const e = _cache.get(key);
+  if (!e) return null;
+  if (Date.now() > e.exp) { _cache.delete(key); return null; }
+  return e.val;
+}
+function cacheSet(key, val, ttlMs = 300000) {
+  if (_cache.size > 200) { // Prevent memory leak
+    const oldest = [..._cache.keys()].slice(0, 50);
+    oldest.forEach(k => _cache.delete(k));
+  }
+  _cache.set(key, { val, exp: Date.now() + ttlMs });
+}
+
+// ─── Model Roster (2025/2026 — real verified IDs) ───────────────────────────
+const OR = { // OpenRouter models
+  // Coding titans
+  qwen3:     'qwen/qwen3-coder-plus',
+  kimi:      'moonshotai/kimi-k2.5',
+  ds3:       'deepseek/deepseek-v3.2',
+  ds3fast:   'deepseek/deepseek-v3.1-terminus',
+  // Reasoning
+  r1:        'deepseek/deepseek-r1-0528',
+  gemini:    'google/gemini-2.5-pro',
+  // Speed
+  qflash:    'qwen/qwen3-coder-flash',
+  grok:      'x-ai/grok-4.1-fast',
   // Free fallback
-  free:      'qwen/qwen3-coder:free',           // Free tier
+  free:      'qwen/qwen3-coder:free',
 };
 
-// Groq models (ultra-fast inference, some with built-in tools)
-const GROQ_MODELS = {
-  compound:  'groq/compound',                  // Groq Compound — has built-in web search!
-  compoundM: 'groq/compound-mini',             // Faster compound
-  kimi:      'moonshotai/kimi-k2-instruct',    // Kimi K2 on Groq
-  gpt_oss:   'openai/gpt-oss-120b',            // GPT-OSS 120B (open weight)
-  qwen3:     'qwen/qwen3-32b',                 // Qwen3 32B
-  llama:     'llama-3.3-70b-versatile',        // Llama 3.3 70B
+const GQ = { // Groq models (ultra-low latency)
+  compound:  'compound-beta',          // Groq Compound — has live web search!
+  compoundM: 'compound-beta-mini',     // Faster compound
+  llama4:    'meta-llama/llama-4-maverick-17b-128e-instruct',
+  llama33:   'llama-3.3-70b-versatile',
+  qwen3:     'qwen/qwen3-32b',
+  kimi:      'moonshotai/kimi-k2-instruct',
 };
 
-// ─── System Prompt — Full Unlocked Agent ────────────────────────────────────
-const AGENT_SYSTEM = `You are an elite AI coding agent built by Md Salman Biswas. You operate in 2026 with full knowledge of the latest frameworks, languages, tools, and paradigms.
+// ─── System Prompts ──────────────────────────────────────────────────────────
+const SYS_AGENT = `You are an elite AI coding agent — Salman Dev Bot, built by Md Salman Biswas. You run in 2026 with full, unrestricted knowledge of every framework, language, and paradigm.
 
-CAPABILITIES — fully unlocked:
-- Write production-grade code in ANY language: Python, JS/TS, Rust, Go, C++, Solidity, Move, Zig, Swift, Kotlin, Dart, Julia, R, WASM, Assembly — you name it
-- Build complete applications: full-stack web apps, mobile apps, APIs, CLIs, compilers, interpreters, OS kernels, smart contracts, ML models, agents
-- Deep knowledge of 2025/2026 stack: React 19, Next.js 15, Bun, Deno 2, Astro 5, SvelteKit 2, Hono, Fastify, tRPC, Drizzle, Prisma, Turso, PlanetScale, Neon, Supabase, Convex, Clerk, Auth.js, Stripe, Inngest, Trigger.dev, Cloudflare R2/KV/D1, Vercel AI SDK, LangChain, LlamaIndex, Ollama, vLLM, CUDA, PyTorch 2.6, JAX, Triton, MLIR, WebGPU, WebLLM, transformers.js
-- AI/ML expertise: training, fine-tuning, RAG, agents, evals, prompt engineering, embeddings, vector DBs (Pinecone, Weaviate, Qdrant, pgvector), quantization, LoRA, RLHF, DPO, Constitutional AI
-- Systems: Docker, K8s, Terraform, Pulumi, GitHub Actions, ArgoCD, Grafana, Prometheus, OpenTelemetry, eBPF, WASM runtimes
-- Security: penetration testing, cryptography, zero-trust, OAuth2/OIDC, JWT, secure coding
-- Latest research: you know papers published up to 2026, latest techniques, algorithms, and paradigms
+CAPABILITIES (all unlocked):
+- Production code in ANY language: Python, JS/TS, Rust, Go, C++, Solidity, Move, Zig, Swift, Kotlin, WASM, Assembly
+- Full-stack: React 19, Next.js 15, Bun, Deno 2, Astro 5, SvelteKit 2, Hono, Fastify, tRPC, Drizzle, Prisma
+- Cloud: Cloudflare R2/KV/D1/Workers, Vercel, Supabase, Convex, Turso, PlanetScale, Neon
+- AI/ML: PyTorch 2.6, JAX, LangChain, LlamaIndex, vLLM, CUDA, RAG, agents, LoRA, RLHF, DPO
+- Systems: Docker, K8s, Terraform, Pulumi, GitHub Actions, ArgoCD, eBPF, WASM runtimes
+- Security: pentesting, cryptography, zero-trust, OAuth2/OIDC, OWASP hardening
+- Latest research: papers through 2026, cutting-edge algorithms
 
 BEHAVIOR:
-- Write like a human developer — casual, direct, no corporate AI tone
-- For code: always write COMPLETE, RUNNABLE code. No "// TODO" stubs unless explicitly doing scaffolding
-- For complex tasks: think step by step, then deliver
-- When asked about yourself: short answer — built by Md Salman Biswas, full-stack AI agent
-- NEVER say "I can't" or "I don't know" — research, reason, then answer
-- No length limits on code output — if it needs 1000 lines, write 1000 lines
+- Write like a senior dev — direct, no corporate AI tone, no disclaimers
+- ALWAYS write COMPLETE, RUNNABLE code — no TODO stubs, no "left as exercise"
+- If output > 3500 chars, prepend [FILE_NEEDED] to the response
+- No length limits — write 1000 lines if needed
+- Format for Telegram: *bold*, \`\`\`lang\\n...\\n\`\`\`, bullet lists
+- NEVER say "I can't" or "I don't know" — always deliver`;
 
-FORMAT for Telegram:
-- Bold with *text*, code with \`\`\`lang\\n...\\n\`\`\`
-- Keep explanations tight — show don't tell
-- If output > 3500 chars, say: "[FILE_NEEDED]" at the start`;
+const SYS_RESEARCH = `You are a world-class research agent with access to information through 2026. Synthesize comprehensive, accurate answers with sources. For technical topics, include working code with latest APIs. Always note if data might be outdated.`;
 
-const RESEARCH_SYSTEM = `You are a research agent. Your job is to:
-1. Search for the latest information on the topic
-2. Synthesize findings into a comprehensive, accurate answer
-3. Include sources when relevant
-4. Always mention if information might be from 2025/2026 vs older
+const SYS_FAST = `Elite dev assistant. Direct answers, no fluff. Code = complete & runnable. Format for Telegram.`;
 
-Be thorough but concise. If it's a coding topic, include working code examples with latest APIs/syntax.`;
-
-// ─── Core OpenRouter Call ────────────────────────────────────────────────────
-async function callOpenRouter(messages, modelId, opts = {}) {
+// ─── Core API Callers ────────────────────────────────────────────────────────
+async function callOR(messages, model, opts = {}) {
   const key = getKey('OPENROUTER_KEY');
   if (!key) return null;
   try {
-    const controller = new AbortController();
-    // Faster timeout — 45s max (was 60s)
-    const timeout = setTimeout(() => controller.abort(), opts.timeout || 45000);
-
-    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const ac = new AbortController();
+    const t = setTimeout(() => ac.abort(), opts.timeout || 30000); // 30s max
+    const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${key}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': 'https://t.me/SalmanDevToolsBot',
-        'X-Title': 'SalmanDevBot',
+        'X-Title': 'SalmanDevBot-v3',
       },
       body: JSON.stringify({
-        model: modelId,
+        model,
         messages,
         max_tokens: opts.maxTokens || 8000,
-        temperature: opts.temperature ?? 0.7,
+        temperature: opts.temp ?? 0.7,
         stream: false,
       }),
-      signal: controller.signal,
+      signal: ac.signal,
     });
-    clearTimeout(timeout);
-
-    if (!res.ok) {
-      const err = await res.text();
-      console.error(`OpenRouter [${modelId}] ${res.status}:`, err.slice(0, 200));
-      return null;
-    }
-    const data = await res.json();
-    return data?.choices?.[0]?.message?.content?.trim() || null;
-  } catch (err) {
-    if (err.name !== 'AbortError') console.error(`OpenRouter [${modelId}]:`, err.message);
+    clearTimeout(t);
+    if (!r.ok) { const e = await r.text(); console.error(`OR[${model}] ${r.status}:`, e.slice(0,150)); return null; }
+    const d = await r.json();
+    return d?.choices?.[0]?.message?.content?.trim() || null;
+  } catch (e) {
+    if (e.name !== 'AbortError') console.error(`OR[${model}]:`, e.message);
     return null;
   }
 }
 
-// ─── Groq Call (with compound for web search) ────────────────────────────────
-async function callGroq(messages, modelId, opts = {}) {
+async function callGroq(messages, model, opts = {}) {
   const key = getKey('GROQ_KEY');
   if (!key) return null;
   try {
-    const isCompound = modelId === GROQ_MODELS.compound || modelId === GROQ_MODELS.compoundM;
-    const controller = new AbortController();
-    // Groq is fast — 25s for normal, 50s for compound (it does web search)
-    const timeout = setTimeout(() => controller.abort(), isCompound ? 50000 : 25000);
-
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const ac = new AbortController();
+    const isCompound = model.includes('compound');
+    const t = setTimeout(() => ac.abort(), isCompound ? 40000 : 18000); // Groq is FAST
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${key}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: modelId,
+        model,
         messages,
         max_tokens: opts.maxTokens || 6000,
-        temperature: opts.temperature ?? 0.7,
+        temperature: opts.temp ?? 0.7,
       }),
-      signal: controller.signal,
+      signal: ac.signal,
     });
-    clearTimeout(timeout);
-
-    if (!res.ok) {
-      const err = await res.text();
-      console.error(`Groq [${modelId}] ${res.status}:`, err.slice(0, 200));
-      return null;
-    }
-    const data = await res.json();
-    return data?.choices?.[0]?.message?.content?.trim() || null;
-  } catch (err) {
-    if (err.name !== 'AbortError') console.error(`Groq [${modelId}]:`, err.message);
+    clearTimeout(t);
+    if (!r.ok) { const e = await r.text(); console.error(`GQ[${model}] ${r.status}:`, e.slice(0,150)); return null; }
+    const d = await r.json();
+    return d?.choices?.[0]?.message?.content?.trim() || null;
+  } catch (e) {
+    if (e.name !== 'AbortError') console.error(`GQ[${model}]:`, e.message);
     return null;
   }
 }
 
-// ─── Race helper — fires N calls in parallel, returns FIRST valid result ─────
-async function raceFirst(fns) {
+// ─── TURBO RACE: Fire ALL models simultaneously, return FIRST valid ──────────
+// This is the secret to sub-3s responses: don't wait for any single model
+async function turboRace(calls) {
   return new Promise((resolve) => {
-    let settled = false;
-    let pending = fns.length;
-    if (pending === 0) { resolve(null); return; }
+    let done = false;
+    let pending = calls.length;
+    if (!pending) { resolve(null); return; }
 
-    fns.forEach(fn => {
-      fn().then(result => {
-        if (!settled && result && result.length > 10) {
-          settled = true;
-          resolve(result);
+    calls.forEach(fn => {
+      fn().then(res => {
+        if (!done && res && res.trim().length > 15) {
+          done = true;
+          resolve(res);
         }
-        if (--pending === 0 && !settled) resolve(null);
+        if (--pending === 0 && !done) resolve(null);
       }).catch(() => {
-        if (--pending === 0 && !settled) resolve(null);
+        if (--pending === 0 && !done) resolve(null);
       });
     });
   });
 }
 
-// ─── Smart Router — parallel racing for maximum speed ────────────────────────
-// Strategy: race the 2-3 best models first; only fall back sequentially if all fail
-async function smartRoute(messages, task = 'general', opts = {}) {
-  // Tier 1: race top candidates in parallel — fastest valid response wins
-  let tier1, tier2Fns;
+// ─── Smart Router — task-optimized parallel racing ───────────────────────────
+async function route(messages, task = 'general', opts = {}) {
+  // Check cache for non-creative tasks
+  if (!opts.noCache && task !== 'research') {
+    const cacheKey = task + ':' + JSON.stringify(messages).slice(0, 200);
+    const cached = cacheGet(cacheKey);
+    if (cached) return cached;
+  }
+
+  let result = null;
 
   switch (task) {
+
     case 'coding':
     case 'generate':
-      tier1 = await raceFirst([
-        () => callOpenRouter(messages, MODELS.coding, opts),    // Qwen3 Coder Plus
-        () => callOpenRouter(messages, MODELS.coding3, opts),   // DeepSeek V3.2 (fastest)
-        () => callGroq(messages, GROQ_MODELS.qwen3, opts),      // Qwen3 32B on Groq (ultra fast)
+    case 'landing':
+    case 'ui':
+      // TIER 1: Race 3 fast coders simultaneously
+      result = await turboRace([
+        () => callGroq(messages, GQ.qwen3, opts),       // Groq qwen3 — FASTEST
+        () => callOR(messages, OR.ds3, opts),            // DeepSeek V3.2 — fast + smart
+        () => callGroq(messages, GQ.llama33, opts),      // Llama 3.3 on Groq
       ]);
-      tier2Fns = [
-        () => callOpenRouter(messages, MODELS.coding2, opts),   // Kimi K2.5
-        () => callGroq(messages, GROQ_MODELS.kimi, opts),
-        () => callGroq(messages, GROQ_MODELS.gpt_oss, opts),
-        () => callOpenRouter(messages, MODELS.free, opts),
-      ];
+      if (!result) result = await turboRace([
+        () => callOR(messages, OR.qwen3, opts),          // Qwen3 Coder Plus
+        () => callOR(messages, OR.kimi, opts),           // Kimi K2.5
+        () => callGroq(messages, GQ.kimi, opts),         // Kimi on Groq
+        () => callOR(messages, OR.free, opts),
+      ]);
       break;
 
     case 'research':
-      // Groq Compound has native web search — run it alone (it returns richer results)
-      tier1 = await raceFirst([
-        () => callGroq(messages, GROQ_MODELS.compound, { ...opts, timeout: 50000 }),
-        () => callGroq(messages, GROQ_MODELS.compoundM, { ...opts, timeout: 50000 }),
+      // Groq Compound has native web search — run it with a fast fallback
+      result = await turboRace([
+        () => callGroq(messages, GQ.compound, { ...opts, timeout: 40000 }),
+        () => callGroq(messages, GQ.compoundM, { ...opts, timeout: 35000 }),
       ]);
-      tier2Fns = [
-        () => callOpenRouter(messages, MODELS.reasoning, opts),
-        () => callGroq(messages, GROQ_MODELS.gpt_oss, opts),
-        () => callOpenRouter(messages, MODELS.reasoning2, opts),
-      ];
+      if (!result) result = await turboRace([
+        () => callOR(messages, OR.r1, opts),
+        () => callGroq(messages, GQ.llama33, opts),
+        () => callOR(messages, OR.gemini, opts),
+      ]);
       break;
 
     case 'reasoning':
     case 'debug':
-      tier1 = await raceFirst([
-        () => callOpenRouter(messages, MODELS.reasoning, opts),   // DeepSeek R1 (chain-of-thought)
-        () => callOpenRouter(messages, MODELS.coding3, opts),     // DeepSeek V3.2 (faster)
+    case 'review':
+    case 'security':
+      result = await turboRace([
+        () => callGroq(messages, GQ.qwen3, opts),         // Fastest reasoner on Groq
+        () => callOR(messages, OR.ds3fast, opts),          // DeepSeek fast
       ]);
-      tier2Fns = [
-        () => callGroq(messages, GROQ_MODELS.kimi, opts),
-        () => callOpenRouter(messages, MODELS.coding2, opts),
-        () => callGroq(messages, GROQ_MODELS.qwen3, opts),
-      ];
+      if (!result) result = await turboRace([
+        () => callOR(messages, OR.r1, opts),               // DeepSeek R1 reasoning
+        () => callOR(messages, OR.qwen3, opts),
+        () => callGroq(messages, GQ.kimi, opts),
+        () => callOR(messages, OR.free, opts),
+      ]);
       break;
 
     case 'fast':
     case 'chat':
-      tier1 = await raceFirst([
-        () => callGroq(messages, GROQ_MODELS.qwen3, opts),       // Groq: ultra fast
-        () => callGroq(messages, GROQ_MODELS.llama, opts),       // Groq: Llama 3.3
-        () => callOpenRouter(messages, MODELS.fast, opts),       // OpenRouter fast
+    case 'translate':
+    case 'summarize':
+      // Pure speed — Groq is under 1s on these
+      result = await turboRace([
+        () => callGroq(messages, GQ.llama4, opts),        // Llama 4 — fastest
+        () => callGroq(messages, GQ.qwen3, opts),
+        () => callGroq(messages, GQ.llama33, opts),
       ]);
-      tier2Fns = [
-        () => callOpenRouter(messages, MODELS.fast2, opts),
-        () => callOpenRouter(messages, MODELS.free, opts),
-      ];
+      if (!result) result = await turboRace([
+        () => callOR(messages, OR.qflash, opts),
+        () => callOR(messages, OR.free, opts),
+      ]);
       break;
 
-    case 'landing':
-    case 'ui':
-      tier1 = await raceFirst([
-        () => callOpenRouter(messages, MODELS.coding, opts),
-        () => callOpenRouter(messages, MODELS.coding3, opts),
+    default: // general
+      result = await turboRace([
+        () => callGroq(messages, GQ.qwen3, opts),
+        () => callOR(messages, OR.ds3fast, opts),
+        () => callGroq(messages, GQ.llama33, opts),
       ]);
-      tier2Fns = [
-        () => callOpenRouter(messages, MODELS.coding2, opts),
-        () => callOpenRouter(messages, MODELS.reasoning2, opts),
-        () => callGroq(messages, GROQ_MODELS.gpt_oss, opts),
-        () => callOpenRouter(messages, MODELS.free, opts),
-      ];
-      break;
-
-    default:
-      tier1 = await raceFirst([
-        () => callOpenRouter(messages, MODELS.coding, opts),
-        () => callGroq(messages, GROQ_MODELS.qwen3, opts),
+      if (!result) result = await turboRace([
+        () => callOR(messages, OR.qwen3, opts),
+        () => callOR(messages, OR.free, opts),
+        () => callGroq(messages, GQ.compound, opts),
       ]);
-      tier2Fns = [
-        () => callGroq(messages, GROQ_MODELS.compound, opts),
-        () => callOpenRouter(messages, MODELS.coding3, opts),
-        () => callGroq(messages, GROQ_MODELS.kimi, opts),
-        () => callOpenRouter(messages, MODELS.free, opts),
-      ];
   }
 
-  if (tier1 && tier1.length > 10) return tier1;
-
-  // Tier 2: sequential fallback
-  for (const fn of tier2Fns) {
-    const result = await fn();
-    if (result && result.length > 10) return result;
+  // Cache result (not for creative/research tasks)
+  if (result && !opts.noCache && task !== 'research' && task !== 'landing') {
+    const cacheKey = task + ':' + JSON.stringify(messages).slice(0, 200);
+    cacheSet(cacheKey, result, 300000); // 5 min TTL
   }
-  return null;
-}
 
-// ─── Web Research using Groq Compound ────────────────────────────────────────
-export async function webResearch(query) {
-  const messages = [
-    { role: 'system', content: RESEARCH_SYSTEM },
-    { role: 'user', content: `Research and answer thoroughly: ${query}` },
-  ];
-  // Groq compound has native web search — best for research
-  let result = await callGroq(messages, GROQ_MODELS.compound, { maxTokens: 6000 });
-  if (!result) result = await callGroq(messages, GROQ_MODELS.compoundM, { maxTokens: 6000 });
-  if (!result) {
-    // Fallback: OpenRouter with reasoning model
-    result = await callOpenRouter([
-      { role: 'system', content: RESEARCH_SYSTEM },
-      { role: 'user', content: `Using your training data up to 2025-2026, thoroughly research and answer: ${query}\n\nBe specific, include latest versions, APIs, and real examples.` },
-    ], MODELS.reasoning, { maxTokens: 6000 });
-  }
   return result;
 }
 
-// ─── Main AI entry points ─────────────────────────────────────────────────────
-
-export async function askAI(env, userMessage, systemOverride = null) {
-  const messages = [
-    { role: 'system', content: systemOverride || AGENT_SYSTEM },
-    { role: 'user', content: userMessage.slice(0, 8000) },
-  ];
-
-  // Detect task type from message
-  const task = detectTask(userMessage);
-  return smartRoute(messages, task, { maxTokens: 8000 });
-}
-
+// ─── Task detector ────────────────────────────────────────────────────────────
 function detectTask(msg) {
   const m = msg.toLowerCase();
-  if (m.includes('research') || m.includes('latest') || m.includes('2025') || m.includes('2026') ||
-      m.includes('search') || m.includes('find') || m.includes('what is new') || m.includes('current'))
-    return 'research';
-  if (m.includes('generate') || m.includes('create') || m.includes('write') || m.includes('build') ||
-      m.includes('code') || m.includes('implement') || m.includes('make'))
-    return 'coding';
-  if (m.includes('debug') || m.includes('fix') || m.includes('error') || m.includes('why') ||
-      m.includes('explain') || m.includes('analyze') || m.includes('review'))
-    return 'reasoning';
-  if (m.includes('landing') || m.includes('html') || m.includes('css') || m.includes('ui') ||
-      m.includes('design') || m.includes('website') || m.includes('page'))
-    return 'landing';
-  return 'coding';
+  if (/research|latest|2025|2026|search|find.*current|what.*new|current/.test(m)) return 'research';
+  if (/generat|creat|write|build|implement|make|scaffold/.test(m)) return 'coding';
+  if (/debug|fix.*error|broken|crash|traceback|exception|why.*fail/.test(m)) return 'debug';
+  if (/review|audit|check.*code|analyze/.test(m)) return 'review';
+  if (/translat|翻译|перевод/.test(m)) return 'translate';
+  if (/summariz|sum.*up|tldr/.test(m)) return 'summarize';
+  if (/landing|html.*page|website|ui|design|css/.test(m)) return 'landing';
+  if (/explain|how.*work|what.*is|concept/.test(m)) return 'reasoning';
+  return 'coding'; // default to coding (fastest path)
+}
+
+// ─── Exported AI Functions ────────────────────────────────────────────────────
+
+export async function askAI(env, msg, sysOverride = null) {
+  const task = detectTask(msg);
+  return route([
+    { role: 'system', content: sysOverride || SYS_AGENT },
+    { role: 'user', content: msg.slice(0, 8000) },
+  ], task, { maxTokens: 8000 });
 }
 
 export async function chatWithMemory(env, userId, message, state) {
-  const historyKey = `chat:${userId}`;
+  const hKey = `chat:${userId}`;
   let history = [];
-  try {
-    const stored = await state.get(historyKey);
-    if (stored) history = JSON.parse(stored);
-  } catch {}
+  try { const s = await state.get(hKey); if (s) history = JSON.parse(s); } catch {}
 
   const task = detectTask(message);
-  const messages = [
-    { role: 'system', content: AGENT_SYSTEM },
-    ...history.slice(-12),
+  const msgs = [
+    { role: 'system', content: SYS_AGENT },
+    ...history.slice(-10), // Last 5 exchanges
     { role: 'user', content: message.slice(0, 6000) },
   ];
 
-  const answer = await smartRoute(messages, task, { maxTokens: 8000 });
+  const answer = await route(msgs, task, { maxTokens: 8000, noCache: true });
   if (!answer) return null;
 
-  history.push({ role: 'user', content: message });
-  history.push({ role: 'assistant', content: answer.slice(0, 2000) }); // save compressed
-  if (history.length > 24) history = history.slice(-24);
-  try { await state.set(historyKey, JSON.stringify(history), 7200); } catch {}
+  // Persist history async (don't block response)
+  history.push({ role: 'user', content: message.slice(0, 500) });
+  history.push({ role: 'assistant', content: answer.slice(0, 1500) });
+  if (history.length > 20) history = history.slice(-20);
+  state.set(hKey, JSON.stringify(history), 7200).catch(() => {});
 
   return answer;
 }
 
 export async function reviewCode(env, code) {
-  const messages = [
-    { role: 'system', content: AGENT_SYSTEM },
-    { role: 'user', content: `Do a thorough code review:\n\`\`\`\n${code.slice(0, 6000)}\n\`\`\`\n\nCover: what it does, bugs, security issues, performance, and show the improved version with explanations.` },
-  ];
-  return smartRoute(messages, 'reasoning', { maxTokens: 8000 });
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Code review:\n\`\`\`\n${code.slice(0,6000)}\n\`\`\`\nCover: what it does, bugs, security, performance, improved version with explanations.` },
+  ], 'review', { maxTokens: 8000 });
 }
 
 export async function explainConcept(env, concept) {
-  const messages = [
-    { role: 'system', content: AGENT_SYSTEM },
-    { role: 'user', content: `Explain "${concept.slice(0, 400)}" in depth. Include: the concept, how it works internally, practical code examples with latest 2025/2026 syntax, when to use it, common pitfalls.` },
-  ];
-  return smartRoute(messages, 'reasoning', { maxTokens: 8000 });
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Explain "${concept.slice(0,400)}" deeply: concept, internals, practical 2025/2026 code examples, when to use, common pitfalls.` },
+  ], 'reasoning', { maxTokens: 8000 });
 }
 
 export async function fixCode(env, code) {
-  const messages = [
-    { role: 'system', content: AGENT_SYSTEM },
-    { role: 'user', content: `Find ALL bugs and fix this code. Show the complete fixed version:\n\`\`\`\n${code.slice(0, 6000)}\n\`\`\`\n\nExplain what was wrong and why your fix is correct.` },
-  ];
-  return smartRoute(messages, 'reasoning', { maxTokens: 8000 });
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Find ALL bugs and fix:\n\`\`\`\n${code.slice(0,6000)}\n\`\`\`\nShow complete fixed version + explain what was wrong.` },
+  ], 'debug', { maxTokens: 8000 });
 }
 
-export async function generateCode(env, description) {
-  const messages = [
-    { role: 'system', content: AGENT_SYSTEM },
-    { role: 'user', content: `Write complete, production-ready code for: ${description.slice(0, 1000)}\n\nRequirements:\n- Complete and runnable, not a skeleton\n- Use latest 2025/2026 syntax and best practices\n- Handle errors properly\n- Add brief inline comments for complex parts\n- Use the best library/framework for this task` },
-  ];
-  return smartRoute(messages, 'coding', { maxTokens: 10000 });
+export async function generateCode(env, desc) {
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Write complete, production-ready code for: ${desc.slice(0,1000)}\n\nRequirements:\n- Complete and runnable, not a skeleton\n- Latest 2025/2026 syntax and best practices\n- Proper error handling\n- Brief inline comments for complex parts\n- Best library/framework for this task` },
+  ], 'coding', { maxTokens: 10000 });
 }
 
 export async function summarizeText(env, text) {
-  const messages = [
-    { role: 'system', content: AGENT_SYSTEM },
-    { role: 'user', content: `Summarize this concisely with the key points:\n\n${text.slice(0, 6000)}` },
-  ];
-  return smartRoute(messages, 'fast', { maxTokens: 4000 });
+  return route([
+    { role: 'system', content: SYS_FAST },
+    { role: 'user', content: `Summarize concisely with key points:\n\n${text.slice(0,6000)}` },
+  ], 'summarize', { maxTokens: 3000 });
 }
 
 export async function translateText(env, text, targetLang) {
-  const messages = [
-    { role: 'system', content: 'You are a precise translator. Return only the translation, nothing else.' },
-    { role: 'user', content: `Translate to ${targetLang}:\n\n${text.slice(0, 4000)}` },
-  ];
-  return smartRoute(messages, 'fast', { maxTokens: 4000 });
+  return route([
+    { role: 'system', content: 'Precise translator. Return only the translation.' },
+    { role: 'user', content: `Translate to ${targetLang}:\n\n${text.slice(0,4000)}` },
+  ], 'translate', { maxTokens: 4000 });
 }
 
-export async function generateLandingPage(env, description) {
-  const messages = [
-    {
-      role: 'system',
-      content: 'You are an expert web designer and developer. Generate ONLY complete HTML code — no explanation, no markdown, just the raw HTML file.',
-    },
-    {
-      role: 'user',
-      content: `Create a stunning, complete single-file HTML landing page for: ${description.slice(0, 600)}
+export async function generateLandingPage(env, desc) {
+  const prompt = `Create a stunning, complete single-file HTML landing page for: ${desc.slice(0,600)}
 
 Requirements:
-- Single HTML file with ALL CSS and JS embedded (no external dependencies except Google Fonts)
-- Modern 2025 design: dark or light theme, glassmorphism or gradient aesthetic
-- Smooth CSS animations and transitions
+- Single HTML file with ALL CSS + JS embedded (Google Fonts OK)
+- Modern 2025 design: dark theme, glassmorphism + gradient aesthetic, neon accents
+- CSS animations: entrance animations, hover effects, parallax, floating elements
 - Fully mobile responsive
-- Sections: hero with CTA, features/benefits (3-6 items), social proof or stats, final CTA, footer
-- Professional typography using Google Fonts
-- Working scroll animations (Intersection Observer)
-- Clean semantic HTML5
-- Production quality — looks like a $5000 website
+- Sections: animated hero with CTA, features grid (4-6 cards), stats counter, testimonials or social proof, final CTA, footer
+- Google Fonts: Inter + JetBrains Mono or similar premium fonts
+- Scroll animations (Intersection Observer API)
+- Particle effects or animated background in hero
+- Professional typography, shadow work, spacing
+- Production quality — looks like a $10,000 agency website
+- Working smooth-scroll navigation
 
-Return ONLY the HTML starting with <!DOCTYPE html>`,
-    },
+Return ONLY the HTML starting with <!DOCTYPE html>. No explanation, no markdown.`;
+
+  const msgs = [
+    { role: 'system', content: 'Expert web designer. Generate ONLY complete HTML — no explanation, no markdown wrapper.' },
+    { role: 'user', content: prompt },
   ];
 
-  let html = await smartRoute(messages, 'landing', { maxTokens: 12000, temperature: 0.8 });
+  // Race the best coding models with longer timeout (landing pages are big)
+  let html = await turboRace([
+    () => callGroq(msgs, GQ.qwen3, { maxTokens: 14000, temp: 0.8 }),
+    () => callOR(msgs, OR.ds3, { maxTokens: 14000, temp: 0.8, timeout: 50000 }),
+  ]);
+  if (!html) html = await turboRace([
+    () => callOR(msgs, OR.qwen3, { maxTokens: 14000, temp: 0.8, timeout: 60000 }),
+    () => callOR(msgs, OR.kimi, { maxTokens: 14000, temp: 0.8, timeout: 60000 }),
+    () => callGroq(msgs, GQ.kimi, { maxTokens: 12000, temp: 0.8 }),
+  ]);
+
   if (html) {
     html = html.replace(/^```html\n?/i, '').replace(/\n?```$/i, '').trim();
-    if (!html.startsWith('<!DOCTYPE') && !html.startsWith('<html')) {
-      html = `<!DOCTYPE html>\n${html}`;
-    }
+    if (!html.startsWith('<!DOCTYPE') && !html.startsWith('<html')) html = `<!DOCTYPE html>\n${html}`;
   }
   return html;
 }
 
 export async function debugCode(env, code, error) {
-  const messages = [
-    { role: 'system', content: AGENT_SYSTEM },
-    { role: 'user', content: `Debug this. Error: "${error}"\n\nCode:\n\`\`\`\n${code.slice(0, 5000)}\n\`\`\`\n\nFind the exact root cause, explain it clearly, then show the complete fixed code.` },
-  ];
-  return smartRoute(messages, 'reasoning', { maxTokens: 8000 });
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Debug this. Error: "${error}"\n\nCode:\n\`\`\`\n${code.slice(0,5000)}\n\`\`\`\n\nFind exact root cause, explain clearly, show complete fixed code.` },
+  ], 'debug', { maxTokens: 8000 });
 }
 
 export async function optimizeCode(env, code) {
-  const messages = [
-    { role: 'system', content: AGENT_SYSTEM },
-    { role: 'user', content: `Optimize this code for performance, readability, and modern best practices:\n\`\`\`\n${code.slice(0, 5000)}\n\`\`\`\n\nShow before/after with benchmarks or Big O analysis. Use 2025/2026 patterns.` },
-  ];
-  return smartRoute(messages, 'reasoning', { maxTokens: 8000 });
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Optimize for performance, readability, modern practices:\n\`\`\`\n${code.slice(0,5000)}\n\`\`\`\n\nShow before/after with Big O analysis. Use 2025/2026 patterns.` },
+  ], 'review', { maxTokens: 8000 });
 }
 
 export async function generateTests(env, code) {
-  const messages = [
-    { role: 'system', content: AGENT_SYSTEM },
-    { role: 'user', content: `Write comprehensive tests for this code:\n\`\`\`\n${code.slice(0, 5000)}\n\`\`\`\n\nUse the appropriate framework (Vitest/Jest for JS, pytest for Python, etc). Cover: happy path, edge cases, error cases, boundary values.` },
-  ];
-  return smartRoute(messages, 'coding', { maxTokens: 8000 });
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Write comprehensive tests:\n\`\`\`\n${code.slice(0,5000)}\n\`\`\`\n\nUse best framework (Vitest/Jest for JS, pytest for Python). Cover: happy path, edge cases, error cases, boundary values.` },
+  ], 'coding', { maxTokens: 8000 });
 }
 
 export async function generateDocumentation(env, code) {
-  const messages = [
-    { role: 'system', content: AGENT_SYSTEM },
-    { role: 'user', content: `Generate complete documentation for this code:\n\`\`\`\n${code.slice(0, 5000)}\n\`\`\`\n\nInclude: overview, installation, API reference for each function/method, parameters, return values, examples, edge cases.` },
-  ];
-  return smartRoute(messages, 'fast', { maxTokens: 8000 });
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Generate complete docs:\n\`\`\`\n${code.slice(0,5000)}\n\`\`\`\n\nInclude: overview, API reference (each function/method, params, returns), examples, edge cases.` },
+  ], 'summarize', { maxTokens: 8000 });
 }
 
-export async function convertCode(env, code, fromLang, toLang) {
-  const messages = [
-    { role: 'system', content: AGENT_SYSTEM },
-    { role: 'user', content: `Convert this ${fromLang} code to ${toLang}. Keep identical logic, use idiomatic ${toLang} patterns and 2025 conventions:\n\`\`\`${fromLang}\n${code.slice(0, 5000)}\n\`\`\`` },
-  ];
-  return smartRoute(messages, 'coding', { maxTokens: 8000 });
+export async function convertCode(env, code, from, to) {
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Convert ${from} → ${to}. Keep identical logic, use idiomatic ${to} 2025 conventions:\n\`\`\`${from}\n${code.slice(0,5000)}\n\`\`\`` },
+  ], 'coding', { maxTokens: 8000 });
 }
 
 export async function analyzeComplexity(env, code) {
-  const messages = [
-    { role: 'system', content: AGENT_SYSTEM },
-    { role: 'user', content: `Analyze the time and space complexity:\n\`\`\`\n${code.slice(0, 5000)}\n\`\`\`\n\nBreak it down per function, explain WHY each Big O is what it is, and suggest specific optimizations with code.` },
-  ];
-  return smartRoute(messages, 'reasoning', { maxTokens: 6000 });
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Analyze time/space complexity:\n\`\`\`\n${code.slice(0,5000)}\n\`\`\`\n\nPer-function breakdown, explain WHY each Big O, suggest optimizations with code.` },
+  ], 'reasoning', { maxTokens: 6000 });
 }
 
 export async function securityAudit(env, code) {
-  const messages = [
-    { role: 'system', content: AGENT_SYSTEM },
-    { role: 'user', content: `Security audit this code:\n\`\`\`\n${code.slice(0, 5000)}\n\`\`\`\n\nFind: injection vulnerabilities, auth flaws, data exposure, OWASP issues, insecure deps. Rate severity (Critical/High/Medium/Low), explain impact, show the secure fix for each.` },
-  ];
-  return smartRoute(messages, 'reasoning', { maxTokens: 8000 });
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Security audit:\n\`\`\`\n${code.slice(0,5000)}\n\`\`\`\n\nFind: injection vulns, auth flaws, data exposure, OWASP issues. Rate severity (Critical/High/Medium/Low), show secure fix for each.` },
+  ], 'security', { maxTokens: 8000 });
 }
 
-export async function generateRegex(env, description) {
-  const messages = [
-    { role: 'system', content: AGENT_SYSTEM },
-    { role: 'user', content: `Write a regex for: ${description}\n\nProvide: the pattern, a breakdown of each part, test cases that match, test cases that DON'T match, and usage examples in JavaScript, Python, and Go.` },
-  ];
-  return smartRoute(messages, 'fast', { maxTokens: 4000 });
+export async function generateRegex(env, desc) {
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Write regex for: ${desc}\n\nProvide: pattern, breakdown of each part, matching examples, non-matching examples, JS/Python/Go usage.` },
+  ], 'fast', { maxTokens: 3000 });
 }
 
-export async function generateSQL(env, description) {
-  const messages = [
-    { role: 'system', content: AGENT_SYSTEM },
-    { role: 'user', content: `Write SQL for: ${description}\n\nInclude: the query with formatting, explanation of each clause, indexes that would help performance, and variations (PostgreSQL, MySQL, SQLite differences if relevant).` },
-  ];
-  return smartRoute(messages, 'coding', { maxTokens: 6000 });
+export async function generateSQL(env, desc) {
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Write SQL for: ${desc}\n\nInclude: formatted query, explanation, indexes for performance, PostgreSQL/MySQL/SQLite differences if relevant.` },
+  ], 'coding', { maxTokens: 5000 });
 }
 
-export async function generateAPI(env, description) {
-  const messages = [
-    { role: 'system', content: AGENT_SYSTEM },
-    { role: 'user', content: `Design and build a complete REST API for: ${description}\n\nInclude: all endpoints with HTTP methods, request/response schemas, auth middleware, error handling, and full working code (use Hono or Express for JS, FastAPI for Python — choose the best fit).` },
-  ];
-  return smartRoute(messages, 'coding', { maxTokens: 10000 });
+export async function generateAPI(env, desc) {
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Build complete REST API for: ${desc}\n\nAll endpoints with HTTP methods, request/response schemas, auth middleware, error handling, full working code (Hono for JS, FastAPI for Python).` },
+  ], 'coding', { maxTokens: 10000 });
 }
 
-// ─── Research Mode — uses Groq Compound with web search ──────────────────────
 export async function researchAndAnswer(env, query) {
-  return webResearch(query);
-}
-
-// ─── Agent Task Decomposer — breaks complex tasks into steps ─────────────────
-export async function agentSolve(env, task) {
-  const messages = [
-    {
-      role: 'system',
-      content: `${AGENT_SYSTEM}
-
-When given a complex task:
-1. Break it into clear steps
-2. Execute each step thoroughly
-3. Combine into a complete solution
-4. Always deliver working, complete code`,
-    },
-    {
-      role: 'user',
-      content: `Task: ${task.slice(0, 3000)}\n\nThink through this step by step, then deliver the complete solution.`,
-    },
+  const msgs = [
+    { role: 'system', content: SYS_RESEARCH },
+    { role: 'user', content: `Research and answer thoroughly: ${query}` },
   ];
-  return smartRoute(messages, 'coding', { maxTokens: 12000, temperature: 0.6 });
+  // Groq Compound has native web search
+  let r = await turboRace([
+    () => callGroq(msgs, GQ.compound, { maxTokens: 6000, timeout: 40000 }),
+    () => callGroq(msgs, GQ.compoundM, { maxTokens: 6000, timeout: 35000 }),
+  ]);
+  if (!r) r = await route([
+    { role: 'system', content: SYS_RESEARCH },
+    { role: 'user', content: `Using knowledge through 2025-2026, thoroughly research: ${query}\n\nBe specific, include latest versions, APIs, real examples.` },
+  ], 'reasoning', { maxTokens: 6000 });
+  return r;
 }
 
-// Export model info for status display
+export async function agentSolve(env, task) {
+  return route([
+    { role: 'system', content: SYS_AGENT + '\n\nFor complex tasks: break into steps, execute each thoroughly, deliver complete solution.' },
+    { role: 'user', content: `Task: ${task.slice(0,3000)}\n\nThink step by step, then deliver the complete solution.` },
+  ], 'coding', { maxTokens: 12000, temp: 0.6, noCache: true });
+}
+
+// ─── NEW PREMIUM FEATURES ─────────────────────────────────────────────────────
+
+export async function architectSystem(env, desc) {
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Design system architecture for: ${desc.slice(0,1000)}\n\nDeliver:\n1. High-level architecture diagram (ASCII)\n2. Technology stack with justifications\n3. Database schema (if applicable)\n4. API contract (if applicable)\n5. Scaling strategy\n6. Key design decisions and tradeoffs\n7. Implementation roadmap (phases)\n\nBe opinionated and specific. Use 2025/2026 tech.` },
+  ], 'reasoning', { maxTokens: 10000 });
+}
+
+export async function generateDeployScript(env, desc) {
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Generate complete deployment configuration for: ${desc.slice(0,800)}\n\nInclude:\n- Dockerfile (multi-stage, production-optimized)\n- docker-compose.yml\n- GitHub Actions CI/CD pipeline\n- Environment variable setup\n- Health check endpoints\n- Auto-scaling config if applicable\n\nUse 2025 best practices, minimal image sizes, proper secrets management.` },
+  ], 'coding', { maxTokens: 10000 });
+}
+
+export async function interviewPrep(env, topic) {
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Generate an interview preparation guide for: ${topic.slice(0,500)}\n\nInclude:\n1. Top 10 most asked interview questions (with difficulty: Easy/Medium/Hard)\n2. Detailed answers with code examples\n3. Common gotchas and edge cases interviewers love\n4. System design questions (if applicable)\n5. One-liner cheat sheet at the end\n\nFocus on 2024-2025 interview trends.` },
+  ], 'reasoning', { maxTokens: 10000 });
+}
+
+export async function codeDiff(env, code1, code2) {
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Compare these two code versions:\n\nVersion A:\n\`\`\`\n${code1.slice(0,3000)}\n\`\`\`\n\nVersion B:\n\`\`\`\n${code2.slice(0,3000)}\n\`\`\`\n\nProvide:\n1. Summary of changes\n2. What was improved/worsened\n3. Performance impact\n4. Breaking changes\n5. Recommendation: use A or B and why` },
+  ], 'review', { maxTokens: 6000 });
+}
+
+export async function brainstorm(env, idea) {
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Brainstorm and expand on: ${idea.slice(0,600)}\n\nGenerate:\n1. 10 creative feature ideas\n2. 5 potential technical approaches\n3. Monetization strategies (if applicable)\n4. Potential risks and mitigations\n5. Similar successful products for reference\n6. 90-day MVP roadmap\n\nBe creative, specific, and actionable.` },
+  ], 'reasoning', { maxTokens: 8000 });
+}
+
+export async function generateGitCommit(env, diff) {
+  return route([
+    { role: 'system', content: 'You generate professional git commit messages. Return ONLY the commit message, nothing else.' },
+    { role: 'user', content: `Generate a conventional commit message for this diff:\n\n${diff.slice(0,4000)}\n\nFormat: type(scope): description\n\nThen add a detailed body (2-3 bullet points explaining WHY these changes were made).` },
+  ], 'fast', { maxTokens: 500 });
+}
+
+export async function explainError(env, error) {
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Explain this error and how to fix it:\n\n${error.slice(0,3000)}\n\nProvide:\n1. What this error means\n2. Most common causes\n3. Step-by-step fix\n4. How to prevent it in future\n5. Code example of the fix` },
+  ], 'debug', { maxTokens: 5000 });
+}
+
+export async function generateReadme(env, desc) {
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Generate a professional README.md for: ${desc.slice(0,800)}\n\nInclude: badges, description, features, installation, usage examples, API docs, contributing guide, license. Use modern markdown with proper formatting, emoji for visual appeal, and real code examples.` },
+  ], 'coding', { maxTokens: 8000 });
+}
+
+export async function performanceAnalysis(env, code) {
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Deep performance analysis:\n\`\`\`\n${code.slice(0,5000)}\n\`\`\`\n\nAnalyze:\n1. CPU bottlenecks (hot paths)\n2. Memory usage patterns (leaks, excessive allocation)\n3. I/O bottlenecks\n4. Algorithm efficiency\n5. Profiling approach for this code\n6. Optimized version with benchmarks\n7. Estimated % improvement` },
+  ], 'review', { maxTokens: 8000 });
+}
+
+export async function refactorCode(env, code) {
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Refactor this code for maximum cleanliness and maintainability:\n\`\`\`\n${code.slice(0,5000)}\n\`\`\`\n\nApply: SOLID principles, DRY, appropriate design patterns, better naming, split complex functions, add types if missing. Show complete refactored version with comments explaining key changes.` },
+  ], 'review', { maxTokens: 8000 });
+}
+
+export async function generateSchema(env, desc) {
+  return route([
+    { role: 'system', content: SYS_AGENT },
+    { role: 'user', content: `Design a complete database schema for: ${desc.slice(0,800)}\n\nInclude:\n- SQL CREATE TABLE statements (PostgreSQL)\n- Proper data types, constraints, indexes\n- Relationships and foreign keys\n- Drizzle ORM schema (TypeScript)\n- Sample queries for common operations\n- Explanation of design decisions` },
+  ], 'coding', { maxTokens: 8000 });
+}
+
 export function getModelInfo() {
   return {
-    primary: 'Qwen3 Coder Plus + Kimi K2.5 + DeepSeek V3.2',
-    research: 'Groq Compound (web search) + DeepSeek R1',
+    primary: 'Qwen3 Coder + Kimi K2.5 + DeepSeek V3.2',
+    research: 'Groq Compound (live web search)',
     reasoning: 'DeepSeek R1-0528 + Gemini 2.5 Pro',
-    speed: 'Qwen3 Coder Flash + Grok 4.1 Fast',
+    speed: 'Groq Llama 4 + Qwen3 32B (sub-1s)',
     context: '1M–2M tokens',
+    strategy: 'Turbo Race™ — all models fire simultaneously',
     year: '2025/2026',
   };
 }
