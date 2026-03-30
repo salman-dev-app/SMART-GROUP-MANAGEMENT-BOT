@@ -1,9 +1,5 @@
 /**
- * Ultra-fast Animated Loader v3.0
- * - Sends initial message INSTANTLY
- * - Faster animation (800ms intervals)
- * - Premium emoji stickers for each task type
- * - Auto-clears on completion
+ * Loader — animated loading indicator
  * Created by Md Salman Biswas
  */
 
@@ -13,34 +9,33 @@ import { sendMessage, editMessageText } from './telegram.js';
 const SPIN = ['◐','◓','◑','◒'];
 const DOTS = ['⠋','⠙','⠹','⠸','⠼','⠴','⠦','⠧','⠇','⠏'];
 
-// Premium task configs with sticker-like emoji
 const TASKS = {
-  research:    { icon: '🔍', emoji: '🌐', label: 'Researching',   steps: ['Searching web…','Reading sources…','Analyzing…','Compiling…'] },
-  agent:       { icon: '🤖', emoji: '⚡', label: 'Agent Mode',    steps: ['Planning steps…','Executing…','Building…','Finalizing…'] },
-  coding:      { icon: '💻', emoji: '🔥', label: 'Coding',        steps: ['Thinking…','Writing code…','Optimizing…','Almost done…'] },
-  generate:    { icon: '⚡', emoji: '✨', label: 'Generating',     steps: ['Analyzing…','Writing…','Polishing…','Wrapping up…'] },
-  landing:     { icon: '🎨', emoji: '🖌️', label: 'Designing',    steps: ['Planning layout…','Writing HTML…','CSS magic…','Final touches…'] },
-  review:      { icon: '🔬', emoji: '🔍', label: 'Reviewing',     steps: ['Reading code…','Checking logic…','Finding issues…','Writing report…'] },
-  debug:       { icon: '🐛', emoji: '🔧', label: 'Debugging',     steps: ['Tracing error…','Root cause…','Writing fix…','Verifying…'] },
-  optimize:    { icon: '🚀', emoji: '⚡', label: 'Optimizing',    steps: ['Profiling…','Finding bottlenecks…','Rewriting…','Done!'] },
-  test:        { icon: '🧪', emoji: '✅', label: 'Testing',       steps: ['Reading code…','Writing tests…','Edge cases…','Done!'] },
-  docs:        { icon: '📝', emoji: '📚', label: 'Documenting',   steps: ['Reading…','Writing docs…','Examples…','Done!'] },
-  explain:     { icon: '🧠', emoji: '💡', label: 'Explaining',    steps: ['Understanding…','Breaking down…','Simplifying…','Done!'] },
-  fix:         { icon: '🔧', emoji: '🛠️', label: 'Fixing',       steps: ['Finding bug…','Tracing issue…','Applying fix…','Done!'] },
-  convert:     { icon: '🔄', emoji: '🔀', label: 'Converting',    steps: ['Parsing…','Translating…','Adapting idioms…','Done!'] },
-  security:    { icon: '🛡️', emoji: '🔒', label: 'Auditing',     steps: ['Scanning…','Checking vulns…','Risk assessment…','Report ready…'] },
-  architect:   { icon: '🏗️', emoji: '📐', label: 'Architecting', steps: ['Analyzing…','Designing…','Planning…','Done!'] },
-  interview:   { icon: '🎯', emoji: '🏆', label: 'Preparing',    steps: ['Loading questions…','Writing answers…','Adding tips…','Done!'] },
-  deploy:      { icon: '🚀', emoji: '☁️', label: 'Deploying',    steps: ['Configuring…','Writing Dockerfile…','CI/CD…','Done!'] },
-  brainstorm:  { icon: '💡', emoji: '🧠', label: 'Brainstorming', steps: ['Thinking…','Generating ideas…','Evaluating…','Done!'] },
-  refactor:    { icon: '♻️', emoji: '✨', label: 'Refactoring',  steps: ['Analyzing…','Restructuring…','Cleaning…','Done!'] },
-  schema:      { icon: '🗃️', emoji: '📊', label: 'Designing DB', steps: ['Modeling…','Relationships…','Indexes…','Done!'] },
-  perf:        { icon: '⚡', emoji: '📈', label: 'Analyzing',     steps: ['Profiling…','Hotspots…','Benchmarking…','Done!'] },
-  commit:      { icon: '📝', emoji: '✅', label: 'Writing commit', steps: ['Reading diff…','Formatting…','Done!'] },
-  readme:      { icon: '📄', emoji: '🌟', label: 'Generating',   steps: ['Planning…','Writing…','Adding examples…','Done!'] },
-  diff:        { icon: '↔️', emoji: '🔍', label: 'Comparing',    steps: ['Reading versions…','Diffing…','Analyzing…','Done!'] },
-  error:       { icon: '💥', emoji: '🔎', label: 'Analyzing',    steps: ['Parsing error…','Root cause…','Fix…','Done!'] },
-  general:     { icon: '🤖', emoji: '✨', label: 'Thinking',      steps: ['Processing…','Reasoning…','Almost done…','Done!'] },
+  research:    { icon: '🔍', label: 'Searching',     steps: ['Searching…','Reading…','Analyzing…'] },
+  agent:       { icon: '🤖', label: 'Working',       steps: ['Planning…','Executing…','Finalizing…'] },
+  coding:      { icon: '💻', label: 'Generating',    steps: ['Writing…','Optimizing…','Done…'] },
+  generate:    { icon: '⚡', label: 'Generating',    steps: ['Writing…','Polishing…','Done…'] },
+  landing:     { icon: '🎨', label: 'Building',      steps: ['Layout…','Styling…','Final touches…'] },
+  review:      { icon: '🔬', label: 'Reviewing',     steps: ['Reading…','Checking…','Writing report…'] },
+  debug:       { icon: '🐛', label: 'Debugging',     steps: ['Tracing…','Root cause…','Fixing…'] },
+  optimize:    { icon: '🚀', label: 'Optimizing',    steps: ['Profiling…','Rewriting…','Done…'] },
+  test:        { icon: '🧪', label: 'Generating',    steps: ['Writing tests…','Edge cases…','Done…'] },
+  docs:        { icon: '📝', label: 'Documenting',   steps: ['Writing…','Examples…','Done…'] },
+  explain:     { icon: '🧠', label: 'Explaining',    steps: ['Breaking down…','Simplifying…','Done…'] },
+  fix:         { icon: '🔧', label: 'Fixing',        steps: ['Finding bug…','Applying fix…','Done…'] },
+  convert:     { icon: '🔄', label: 'Converting',    steps: ['Translating…','Adapting…','Done…'] },
+  security:    { icon: '🛡️', label: 'Auditing',     steps: ['Scanning…','Risk assessment…','Done…'] },
+  architect:   { icon: '🏗️', label: 'Designing',   steps: ['Analyzing…','Planning…','Done…'] },
+  interview:   { icon: '🎯', label: 'Preparing',    steps: ['Writing questions…','Answers…','Done…'] },
+  deploy:      { icon: '🚀', label: 'Generating',    steps: ['Dockerfile…','CI/CD…','Done…'] },
+  brainstorm:  { icon: '💡', label: 'Brainstorming', steps: ['Ideas…','Evaluating…','Done…'] },
+  refactor:    { icon: '♻️', label: 'Refactoring',  steps: ['Analyzing…','Restructuring…','Done…'] },
+  schema:      { icon: '🗃️', label: 'Designing',    steps: ['Modeling…','Relationships…','Done…'] },
+  perf:        { icon: '⚡', label: 'Analyzing',     steps: ['Profiling…','Benchmarking…','Done…'] },
+  commit:      { icon: '📝', label: 'Generating',    steps: ['Reading diff…','Done…'] },
+  readme:      { icon: '📄', label: 'Generating',    steps: ['Writing…','Done…'] },
+  diff:        { icon: '↔️', label: 'Comparing',    steps: ['Diffing…','Analyzing…','Done…'] },
+  error:       { icon: '💥', label: 'Analyzing',    steps: ['Parsing…','Root cause…','Done…'] },
+  general:     { icon: '🤖', label: 'Thinking',      steps: ['Processing…','Almost done…'] },
 };
 
 // Minimal loading bar
@@ -60,7 +55,7 @@ export async function startLoader(token, chatId, taskType = 'general') {
   let msgId = null;
   try {
     const r = await sendMessage(token, chatId,
-      `${cfg.icon} *${cfg.label}* ${DOTS[0]}\n\`${bar(0)}\` 0s  ${cfg.emoji}\n\n_${cfg.steps[0]}_`
+      `${cfg.icon} _${cfg.steps[0]}_`
     );
     msgId = r?.result?.message_id ?? null;
   } catch {}
@@ -77,7 +72,7 @@ export async function startLoader(token, chatId, taskType = 'general') {
     const b = bar(el);
     try {
       await editMessageText(token, chatId, msgId,
-        `${cfg.icon} *${cfg.label}* ${spin}\n\`${b}\` ${el.toFixed(0)}s  ${cfg.emoji}\n\n_${step}_`
+        `${cfg.icon} _${step} ${spin}_`
       );
     } catch { stopped = true; clearInterval(iv); }
     frame++;
@@ -113,9 +108,7 @@ export async function withLoader(token, chatId, taskType, aiFn) {
   // Edit loader to completion
   if (msgId) {
     try {
-      await editMessageText(token, chatId, msgId,
-        `${cfg.icon} *${cfg.label} complete* ✅\n_${elapsed}s — powered by Salman Dev Bot_`
-      );
+      await editMessageText(token, chatId, msgId, `${cfg.icon} _Done in ${elapsed}s_`);
     } catch {}
   }
 

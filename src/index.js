@@ -20,6 +20,7 @@ import {
   architectSystem, generateDeployScript, interviewPrep,
   codeDiff, brainstorm, generateGitCommit, explainError,
   generateReadme, performanceAnalysis, refactorCode, generateSchema,
+  setEnv,
 } from './modules/ai.js';
 import {
   handleFunCallback, handleJoke, handleQuote,
@@ -76,6 +77,8 @@ async function handleSetup(request, env) {
 
 async function handleUpdate(update, env, state) {
   try {
+    // Inject env keys into AI module (works for both local server and Cloudflare Workers)
+    setEnv(env);
     if (update.callback_query) return handleCallback(update.callback_query, env, state);
     if (update.message) return handleMessage(update.message, env, state);
   } catch (err) { console.error('Update error:', err); }
@@ -756,761 +759,524 @@ function getDashboardHTML() {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Salman Dev Bot — AI Coding Agent</title>
+  <title>Salman Dev Bot — AI Coding Assistant</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #050508;
-      --surface: #0d0d14;
-      --surface2: #13131e;
-      --border: #1a1a2e;
-      --border2: #252540;
-      --accent: #818cf8;
-      --accent2: #22d3ee;
-      --accent3: #a78bfa;
-      --green: #34d399;
-      --orange: #fb923c;
-      --pink: #f472b6;
-      --text: #f1f5f9;
-      --muted: #64748b;
-      --muted2: #94a3b8;
+      --bg: #030305;
+      --surface: #0c0c12;
+      --surface2: #111119;
+      --border: #1c1c2e;
+      --border2: #272740;
+      --accent: #7c6fcd;
+      --accent2: #22c4e0;
+      --accent3: #9f7aea;
+      --green: #2dd4a0;
+      --orange: #f59e0b;
+      --pink: #ec4899;
+      --text: #f0f4f8;
+      --muted: #5a6880;
+      --muted2: #8896aa;
       --mono: 'JetBrains Mono', monospace;
-      --r: 12px;
+      --r: 14px;
     }
 
     html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
 
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+    #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.6; }
 
-    /* ── Canvas BG ── */
-    #canvas-bg {
-      position: fixed; inset: 0; z-index: 0;
-      pointer-events: none;
-    }
-
-    /* ── Ambient glows ── */
-    .glow-orb {
+    .orb {
       position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
-      filter: blur(80px);
-      animation: orb-drift 20s ease-in-out infinite;
+      filter: blur(100px); animation: orb-float 25s ease-in-out infinite;
     }
-    .glow-orb-1 { width: 700px; height: 700px; top: -200px; right: -200px; background: radial-gradient(circle, rgba(129,140,248,0.08), transparent 60%); }
-    .glow-orb-2 { width: 600px; height: 600px; bottom: -200px; left: -200px; background: radial-gradient(circle, rgba(34,211,238,0.06), transparent 60%); animation-delay: -10s; }
-    .glow-orb-3 { width: 400px; height: 400px; top: 40%; left: 40%; background: radial-gradient(circle, rgba(167,139,250,0.05), transparent 60%); animation-delay: -5s; }
+    .orb-1 { width: 600px; height: 600px; top: -200px; right: -150px; background: radial-gradient(circle, rgba(124,111,205,0.07), transparent 65%); }
+    .orb-2 { width: 500px; height: 500px; bottom: -150px; left: -100px; background: radial-gradient(circle, rgba(34,196,224,0.05), transparent 65%); animation-delay: -12s; }
+    @keyframes orb-float { 0%,100%{transform:translate(0,0)} 33%{transform:translate(20px,-25px)} 66%{transform:translate(-15px,15px)} }
 
-    @keyframes orb-drift {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      33% { transform: translate(30px, -30px) scale(1.05); }
-      66% { transform: translate(-20px, 20px) scale(0.95); }
-    }
+    .container { max-width: 1080px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
 
-    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
-
-    /* ── Nav ── */
+    /* Nav */
     nav {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 20px 0;
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(3,3,5,0.80); backdrop-filter: blur(24px);
       border-bottom: 1px solid var(--border);
-      position: sticky; top: 0;
-      background: rgba(5,5,8,0.85);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      z-index: 100;
     }
-    .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 24px; width: 100%; display: flex; align-items: center; justify-content: space-between; }
+    .nav-inner { max-width: 1080px; margin: 0 auto; padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
     .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-    .logo-icon {
-      width: 36px; height: 36px; border-radius: 10px;
+    .logo-mark {
+      width: 34px; height: 34px; border-radius: 9px;
       background: linear-gradient(135deg, var(--accent), var(--accent3));
       display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
-      box-shadow: 0 0 20px rgba(129,140,248,0.3);
+      font-size: 16px; box-shadow: 0 0 18px rgba(124,111,205,0.28);
     }
-    .logo-text { font-weight: 800; font-size: 17px; letter-spacing: -0.5px; color: var(--text); }
-    .logo-text span { color: var(--accent); }
-    .nav-links { display: flex; align-items: center; gap: 32px; }
-    .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
-    .nav-links a:hover { color: var(--text); }
-    .status-badge {
+    .logo-name { font-weight: 800; font-size: 16px; letter-spacing: -0.4px; color: var(--text); }
+    .logo-name em { font-style: normal; color: var(--accent); }
+    .nav-right { display: flex; align-items: center; gap: 28px; }
+    .nav-link { color: var(--muted); text-decoration: none; font-size: 13.5px; font-weight: 500; transition: color 0.2s; }
+    .nav-link:hover { color: var(--text); }
+    .dot-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(45,212,160,0.08); border: 1px solid rgba(45,212,160,0.18);
+      color: var(--green); font-size: 11.5px; font-weight: 600;
+      padding: 4px 10px; border-radius: 100px; font-family: var(--mono);
+    }
+    .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); animation: blink-dot 2s infinite; }
+    @keyframes blink-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* Hero */
+    .hero { padding: 96px 0 64px; text-align: center; }
+    .eyebrow {
       display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.2);
-      color: var(--green); font-size: 12px; padding: 5px 12px; border-radius: 100px;
-      font-family: var(--mono); font-weight: 500;
+      background: rgba(124,111,205,0.07); border: 1px solid rgba(124,111,205,0.18);
+      color: var(--accent); font-size: 12.5px; font-weight: 600;
+      padding: 5px 14px; border-radius: 100px;
+      margin-bottom: 26px; letter-spacing: 0.02em;
+      animation: up 0.55s ease both;
     }
-    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse-dot 2s infinite; }
-    @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
-
-    /* ── Hero ── */
-    .hero {
-      padding: 100px 0 80px;
-      text-align: center;
-    }
-
-    .hero-eyebrow {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(129,140,248,0.08);
-      border: 1px solid rgba(129,140,248,0.2);
-      color: var(--accent); font-size: 13px; font-weight: 500;
-      padding: 6px 16px; border-radius: 100px;
-      margin-bottom: 28px;
-      animation: fade-in-up 0.6s ease both;
-    }
-
     h1 {
-      font-size: clamp(42px, 7vw, 80px);
-      font-weight: 900; letter-spacing: -3px; line-height: 1.0;
-      margin-bottom: 20px;
-      animation: fade-in-up 0.6s 0.1s ease both;
+      font-size: clamp(40px, 7vw, 76px); font-weight: 900;
+      letter-spacing: -3px; line-height: 1.0; margin-bottom: 20px;
+      animation: up 0.55s 0.08s ease both;
     }
-    .grad-text {
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--accent3) 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
+    .grad { background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 55%, var(--accent3) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .sub { color: var(--muted2); font-size: 17.5px; line-height: 1.65; max-width: 520px; margin: 0 auto 38px; animation: up 0.55s 0.16s ease both; }
+    .cta-row { display: flex; gap: 11px; justify-content: center; flex-wrap: wrap; animation: up 0.55s 0.24s ease both; }
+    .btn { display: inline-flex; align-items: center; gap: 7px; padding: 12px 24px; border-radius: 10px; font-size: 14.5px; font-weight: 600; text-decoration: none; transition: all 0.22s; cursor: pointer; border: none; }
+    .btn-p { background: linear-gradient(135deg, var(--accent), var(--accent3)); color: #fff; box-shadow: 0 0 28px rgba(124,111,205,0.22), 0 4px 14px rgba(0,0,0,0.3); }
+    .btn-p:hover { transform: translateY(-2px); box-shadow: 0 0 36px rgba(124,111,205,0.32), 0 8px 22px rgba(0,0,0,0.4); }
+    .btn-s { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
+    .btn-s:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
 
-    .hero-sub {
-      color: var(--muted2); font-size: 18px; line-height: 1.7; max-width: 560px;
-      margin: 0 auto 40px; font-weight: 400;
-      animation: fade-in-up 0.6s 0.2s ease both;
-    }
+    @keyframes up { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
 
-    .cta-row {
-      display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
-      animation: fade-in-up 0.6s 0.3s ease both;
-    }
+    /* Stats */
+    .stats { display: grid; grid-template-columns: repeat(4,1fr); background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin: 56px 0; }
+    .stat { padding: 26px 18px; text-align: center; border-right: 1px solid var(--border); transition: background 0.2s; }
+    .stat:last-child { border-right: none; }
+    .stat:hover { background: var(--surface2); }
+    .stat-n { font-size: 34px; font-weight: 800; font-family: var(--mono); background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; }
+    .stat-l { font-size: 11.5px; color: var(--muted); margin-top: 5px; font-weight: 500; }
 
-    .btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 13px 26px; border-radius: 10px;
-      font-size: 15px; font-weight: 600; text-decoration: none;
-      transition: all 0.25s cubic-bezier(0.4,0,0.2,1); cursor: pointer; border: none;
+    /* Badges */
+    .badge-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 36px 0; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 100px; padding: 7px 15px;
+      font-size: 13px; font-weight: 500; color: var(--muted2);
+      transition: all 0.2s;
     }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent3));
-      color: #fff;
-      box-shadow: 0 0 30px rgba(129,140,248,0.25), 0 4px 15px rgba(0,0,0,0.3);
-    }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 40px rgba(129,140,248,0.35), 0 8px 25px rgba(0,0,0,0.4); }
-    .btn-secondary {
-      background: var(--surface2); color: var(--text);
-      border: 1px solid var(--border2);
-    }
-    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+    .badge:hover { border-color: var(--accent); color: var(--text); transform: scale(1.04); }
+    .badge-icon { font-size: 15px; }
 
-    @keyframes fade-in-up {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    /* Terminal */
+    .terminal { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: 0 24px 64px rgba(0,0,0,0.5); margin: 0 auto 72px; max-width: 680px; }
+    .term-bar { padding: 11px 14px; display: flex; align-items: center; gap: 7px; border-bottom: 1px solid var(--border); background: var(--surface2); }
+    .dot-r { width: 11px; height: 11px; border-radius: 50%; background: #ff5f57; }
+    .dot-y { width: 11px; height: 11px; border-radius: 50%; background: #febc2e; }
+    .dot-g { width: 11px; height: 11px; border-radius: 50%; background: #28c840; }
+    .term-title { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-left: 6px; }
+    .term-body { padding: 18px 22px; font-family: var(--mono); font-size: 12.5px; line-height: 1.9; }
+    .tc-p { color: var(--accent); }
+    .tc-cmd { color: var(--text); }
+    .tc-out { color: var(--muted2); }
+    .tc-ok { color: var(--green); }
+    .tc-hl { color: var(--accent2); }
+    .cursor { display: inline-block; width: 7px; height: 13px; background: var(--accent); animation: cur 1s step-end infinite; vertical-align: middle; }
+    @keyframes cur { 0%,100%{opacity:1} 50%{opacity:0} }
 
-    /* ── Speed Badge ── */
-    .speed-strip {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      margin: 48px 0;
-      padding: 14px 24px;
-      background: rgba(251,146,60,0.06);
-      border: 1px solid rgba(251,146,60,0.15);
-      border-radius: var(--r);
-      max-width: 500px; margin: 48px auto;
-      animation: fade-in-up 0.6s 0.4s ease both;
-    }
-    .speed-strip span { font-family: var(--mono); font-size: 13px; color: var(--orange); }
-    .speed-strip strong { color: var(--text); font-family: var(--mono); }
+    /* Section */
+    section { padding: 72px 0; }
+    .sec-label { display: inline-flex; align-items: center; gap: 5px; background: rgba(124,111,205,0.07); border: 1px solid rgba(124,111,205,0.14); color: var(--accent); font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 100px; letter-spacing: 0.08em; text-transform: uppercase; font-family: var(--mono); margin-bottom: 10px; }
+    .sec-h { font-size: clamp(26px, 4vw, 40px); font-weight: 800; letter-spacing: -1.2px; margin-bottom: 6px; }
+    .sec-p { color: var(--muted2); font-size: 16px; }
 
-    /* ── Stats ── */
-    .stats-grid {
-      display: grid; grid-template-columns: repeat(4, 1fr);
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px; overflow: hidden;
-      margin: 60px 0;
-    }
-    .stat-cell {
-      padding: 28px 20px; text-align: center;
-      border-right: 1px solid var(--border);
-      transition: background 0.2s;
-    }
-    .stat-cell:last-child { border-right: none; }
-    .stat-cell:hover { background: var(--surface2); }
-    .stat-num {
-      font-size: 36px; font-weight: 800; font-family: var(--mono);
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text; line-height: 1;
-    }
-    .stat-label { font-size: 12px; color: var(--muted); margin-top: 6px; font-weight: 500; }
-
-    /* ── Section ── */
-    .section { padding: 80px 0; }
-    .section-tag {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(129,140,248,0.08); border: 1px solid rgba(129,140,248,0.15);
-      color: var(--accent); font-size: 12px; font-weight: 600;
-      padding: 4px 12px; border-radius: 100px; letter-spacing: 0.05em;
-      text-transform: uppercase; font-family: var(--mono);
-      margin-bottom: 12px;
-    }
-    .section-title h2 {
-      font-size: clamp(28px, 4vw, 42px); font-weight: 800;
-      letter-spacing: -1.5px; margin-bottom: 8px;
-    }
-    .section-title p { color: var(--muted2); font-size: 17px; }
-
-    /* ── Feature Cards ── */
-    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1px; background: var(--border); border-radius: 16px; overflow: hidden; }
-    .feature-card {
-      background: var(--surface);
-      padding: 28px;
-      transition: background 0.25s;
+    /* Feature grid */
+    .feat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(272px, 1fr)); gap: 1px; background: var(--border); border-radius: 16px; overflow: hidden; }
+    .feat {
+      background: var(--surface); padding: 26px;
+      transition: background 0.22s;
       position: relative; overflow: hidden;
     }
-    .feature-card::before {
-      content: ''; position: absolute; inset: 0;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      opacity: 0; transition: opacity 0.25s;
-    }
-    .feature-card:hover { background: var(--surface2); }
-    .feature-card:hover::before { opacity: 0.03; }
-    .feature-icon {
-      font-size: 32px; margin-bottom: 14px;
-      display: inline-block;
-      animation: float 4s ease-in-out infinite;
-    }
+    .feat:hover { background: var(--surface2); }
+    .feat-icon { font-size: 28px; margin-bottom: 12px; display: inline-block; animation: float 4.5s ease-in-out infinite; }
+    .feat:nth-child(2) .feat-icon { animation-delay: -1.1s; }
+    .feat:nth-child(3) .feat-icon { animation-delay: -2.2s; }
+    .feat:nth-child(4) .feat-icon { animation-delay: -3.3s; }
+    .feat:nth-child(5) .feat-icon { animation-delay: -0.6s; }
+    .feat:nth-child(6) .feat-icon { animation-delay: -1.8s; }
     @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
-    .feature-card:nth-child(2) .feature-icon { animation-delay: -1s; }
-    .feature-card:nth-child(3) .feature-icon { animation-delay: -2s; }
-    .feature-card:nth-child(4) .feature-icon { animation-delay: -3s; }
-    .feature-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
-    .feature-card p { font-size: 14px; color: var(--muted2); line-height: 1.6; }
+    .feat h3 { font-size: 15px; font-weight: 700; margin-bottom: 7px; }
+    .feat p { font-size: 13.5px; color: var(--muted2); line-height: 1.6; }
 
-    /* ── New Features Badge ── */
-    .new-tag {
-      display: inline-block; background: linear-gradient(135deg, var(--accent3), var(--pink));
-      color: #fff; font-size: 10px; font-weight: 700;
-      padding: 2px 7px; border-radius: 100px; margin-left: 6px;
-      vertical-align: middle; letter-spacing: 0.05em;
-      font-family: var(--mono);
-    }
-
-    /* ── Command Pills ── */
-    .cmd-section { margin-top: 40px; }
-    .cmd-group { margin-bottom: 28px; }
-    .cmd-group-label {
-      font-size: 11px; font-weight: 700; color: var(--muted);
-      text-transform: uppercase; letter-spacing: 0.1em;
-      font-family: var(--mono);
-      margin-bottom: 10px;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .cmd-group-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-    .cmd-pills { display: flex; flex-wrap: wrap; gap: 8px; }
-    .cmd-pill {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 8px; padding: 8px 14px;
-      transition: all 0.2s;
-    }
+    /* Commands */
+    .cmd-group { margin-bottom: 26px; }
+    .cmd-label { font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--mono); margin-bottom: 9px; display: flex; align-items: center; gap: 8px; }
+    .cmd-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .cmd-pills { display: flex; flex-wrap: wrap; gap: 7px; }
+    .cmd-pill { display: inline-flex; align-items: center; gap: 7px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 7px 13px; transition: all 0.18s; }
     .cmd-pill:hover { border-color: var(--accent); transform: translateY(-1px); background: var(--surface2); }
-    .cmd-pill .cmd-name { font-family: var(--mono); font-size: 13px; color: var(--accent); font-weight: 500; }
-    .cmd-pill .cmd-desc { font-size: 11px; color: var(--muted); }
+    .cmd-n { font-family: var(--mono); font-size: 12.5px; color: var(--accent); font-weight: 500; }
+    .cmd-d { font-size: 11px; color: var(--muted); }
 
-    /* ── Models ── */
-    .models-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
-    .model-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--r); padding: 20px;
-      transition: all 0.25s;
-    }
-    .model-card:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
-    .model-type {
-      font-size: 10px; font-weight: 700; font-family: var(--mono);
-      text-transform: uppercase; letter-spacing: 0.1em;
-      margin-bottom: 8px; padding: 3px 8px; border-radius: 4px;
-      display: inline-block;
-    }
-    .model-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
-    .model-card p { font-size: 13px; color: var(--muted2); line-height: 1.5; }
+    /* Models */
+    .model-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 11px; }
+    .model { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 18px; transition: all 0.22s; }
+    .model:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.28); }
+    .model-tag { font-size: 10px; font-weight: 700; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; padding: 2px 7px; border-radius: 4px; display: inline-block; }
+    .model h3 { font-size: 14.5px; font-weight: 700; margin-bottom: 5px; }
+    .model p { font-size: 12.5px; color: var(--muted2); line-height: 1.5; }
 
-    /* ── Terminal Preview ── */
-    .terminal {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 14px; overflow: hidden;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-    }
-    .terminal-header {
-      padding: 12px 16px; display: flex; align-items: center; gap: 8px;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface2);
-    }
-    .term-dot { width: 12px; height: 12px; border-radius: 50%; }
-    .term-dot-r { background: #ff5f57; }
-    .term-dot-y { background: #febc2e; }
-    .term-dot-g { background: #28c840; }
-    .terminal-title { font-size: 13px; color: var(--muted); font-family: var(--mono); margin-left: 8px; }
-    .terminal-body { padding: 20px 24px; font-family: var(--mono); font-size: 13px; line-height: 1.8; }
-    .term-prompt { color: var(--accent); }
-    .term-cmd { color: var(--text); }
-    .term-out { color: var(--muted2); }
-    .term-success { color: var(--green); }
-    .term-accent { color: var(--accent2); }
-    .term-cursor { display: inline-block; width: 8px; height: 14px; background: var(--accent); animation: blink 1s step-end infinite; vertical-align: middle; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+    /* CTA */
+    .cta-sec { text-align: center; padding: 72px 0; background: radial-gradient(ellipse at center, rgba(124,111,205,0.05), transparent 70%); }
+    .cta-sec h2 { font-size: clamp(26px, 4vw, 44px); font-weight: 800; letter-spacing: -1.2px; margin-bottom: 10px; }
+    .cta-sec p { color: var(--muted2); font-size: 16px; margin-bottom: 28px; }
 
-    /* ── Sticker Section ── */
-    .sticker-row {
-      display: flex; flex-wrap: wrap; gap: 12px;
-      justify-content: center; margin: 32px 0;
-    }
-    .sticker {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 100px; padding: 8px 16px;
-      font-size: 14px; font-weight: 500;
-      transition: all 0.2s;
-    }
-    .sticker:hover { transform: scale(1.05); border-color: var(--accent); box-shadow: 0 0 20px rgba(129,140,248,0.15); }
-    .sticker span { font-size: 18px; }
-
-    /* ── CTA Section ── */
-    .cta-section {
-      text-align: center; padding: 80px 0;
-      background: radial-gradient(ellipse at center, rgba(129,140,248,0.05), transparent 70%);
-    }
-    .cta-section h2 { font-size: clamp(28px, 4vw, 48px); font-weight: 800; letter-spacing: -1.5px; margin-bottom: 12px; }
-    .cta-section p { color: var(--muted2); font-size: 17px; margin-bottom: 32px; }
-
-    /* ── Footer ── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 32px 0; text-align: center;
-      color: var(--muted); font-size: 13px;
-    }
+    /* Footer */
+    footer { border-top: 1px solid var(--border); padding: 28px 0; text-align: center; color: var(--muted); font-size: 13px; }
     footer a { color: var(--accent); text-decoration: none; }
     footer a:hover { color: var(--text); }
-    .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 12px; }
+    .foot-links { display: flex; justify-content: center; gap: 22px; margin-bottom: 10px; }
 
-    /* ── Scroll reveal ── */
-    .reveal { opacity: 0; transform: translateY(30px); transition: all 0.6s cubic-bezier(0.4,0,0.2,1); }
+    /* Reveal */
+    .reveal { opacity: 0; transform: translateY(24px); transition: all 0.55s cubic-bezier(0.4,0,0.2,1); }
     .reveal.visible { opacity: 1; transform: translateY(0); }
 
-    /* ── Responsive ── */
     @media (max-width: 768px) {
-      .stats-grid { grid-template-columns: repeat(2, 1fr); }
-      .nav-links { display: none; }
+      .stats { grid-template-columns: repeat(2,1fr); }
+      .nav-right .nav-link { display: none; }
       h1 { letter-spacing: -2px; }
     }
     @media (max-width: 480px) {
-      .stats-grid { grid-template-columns: repeat(2, 1fr); }
-      .hero { padding: 60px 0 40px; }
+      .hero { padding: 56px 0 40px; }
+      .stats { grid-template-columns: repeat(2,1fr); }
     }
   </style>
 </head>
 <body>
-  <!-- Particle canvas -->
-  <canvas id="canvas-bg"></canvas>
+  <canvas id="bg-canvas"></canvas>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
 
-  <!-- Ambient glows -->
-  <div class="glow-orb glow-orb-1"></div>
-  <div class="glow-orb glow-orb-2"></div>
-  <div class="glow-orb glow-orb-3"></div>
-
-  <!-- Nav -->
   <nav>
     <div class="nav-inner">
       <a href="/" class="logo">
-        <div class="logo-icon">🤖</div>
-        <div class="logo-text">Salman<span>Dev</span></div>
+        <div class="logo-mark">🤖</div>
+        <div class="logo-name">Salman<em>Dev</em></div>
       </a>
-      <div class="nav-links">
-        <a href="#features">Features</a>
-        <a href="#commands">Commands</a>
-        <a href="#models">Models</a>
-        <a href="/terms">Terms</a>
+      <div class="nav-right">
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#commands" class="nav-link">Commands</a>
+        <a href="#models" class="nav-link">Models</a>
+        <a href="/terms" class="nav-link">Terms</a>
+        <div class="dot-badge"><div class="dot"></div>Live</div>
       </div>
-      <div class="status-badge"><div class="status-dot"></div> Live</div>
     </div>
   </nav>
 
-  <!-- Hero -->
   <div class="container">
     <div class="hero">
-      <div class="hero-eyebrow">
-        ⚡ Turbo Race™ · 2025/2026 Models · Live Web Search
-      </div>
-      <h1>
-        Your AI Dev<br><span class="grad-text">Coding Agent</span>
-      </h1>
-      <p class="hero-sub">
-        45+ commands. Multiple AI models racing in parallel. Sub-3s responses. Full agent mode with live web search — built for developers who move fast.
-      </p>
+      <div class="eyebrow">⚡ AI Coding Assistant · Live Web Search · 45+ Commands</div>
+      <h1>Build faster with<br><span class="grad">AI assistance</span></h1>
+      <p class="sub">A Telegram bot that codes, researches, debugs, and designs — with conversation memory and real-time web search.</p>
       <div class="cta-row">
-        <a href="https://t.me/SalmanDevToolsBot" class="btn btn-primary" target="_blank" rel="noopener">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.14 14.231l-2.98-.929c-.648-.203-.66-.648.136-.961l11.647-4.494c.54-.194 1.01.132.95.374z"/></svg>
+        <a href="https://t.me/SalmanDevToolsBot" class="btn btn-p" target="_blank" rel="noopener">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.14 14.231l-2.98-.929c-.648-.203-.66-.648.136-.961l11.647-4.494c.54-.194 1.01.132.95.374z"/></svg>
           Open in Telegram
         </a>
-        <a href="#commands" class="btn btn-secondary">View Commands</a>
-      </div>
-
-      <div class="speed-strip">
-        <span>🚀</span>
-        <strong>Turbo Race™:</strong>
-        <span>fires 3 AI models simultaneously — fastest response wins</span>
+        <a href="#commands" class="btn btn-s">Browse Commands</a>
       </div>
     </div>
 
-    <!-- Stats -->
-    <div class="stats-grid reveal">
-      <div class="stat-cell"><div class="stat-num" data-count="8">0</div><div class="stat-label">AI Models</div></div>
-      <div class="stat-cell"><div class="stat-num" data-count="45">0</div><div class="stat-label">Commands</div></div>
-      <div class="stat-cell"><div class="stat-num">2M</div><div class="stat-label">Context Tokens</div></div>
-      <div class="stat-cell"><div class="stat-num">~2s</div><div class="stat-label">Avg Response</div></div>
+    <div class="stats reveal">
+      <div class="stat"><div class="stat-n" data-count="8">0</div><div class="stat-l">AI Models</div></div>
+      <div class="stat"><div class="stat-n" data-count="45">0</div><div class="stat-l">Commands</div></div>
+      <div class="stat"><div class="stat-n">2M</div><div class="stat-l">Token Context</div></div>
+      <div class="stat"><div class="stat-n">~2s</div><div class="stat-l">Avg Response</div></div>
     </div>
 
-    <!-- Sticker row -->
-    <div class="sticker-row reveal">
-      <div class="sticker"><span>⚡</span> Ultra Fast</div>
-      <div class="sticker"><span>🧠</span> Memory Context</div>
-      <div class="sticker"><span>🌐</span> Live Web Search</div>
-      <div class="sticker"><span>🤖</span> Agent Mode</div>
-      <div class="sticker"><span>📄</span> File Delivery</div>
-      <div class="sticker"><span>🔒</span> Secure</div>
-      <div class="sticker"><span>🆓</span> 100% Free</div>
+    <div class="badge-row reveal">
+      <div class="badge"><span class="badge-icon">⚡</span>Fast responses</div>
+      <div class="badge"><span class="badge-icon">🧠</span>Conversation memory</div>
+      <div class="badge"><span class="badge-icon">🌐</span>Live web search</div>
+      <div class="badge"><span class="badge-icon">🤖</span>Agent mode</div>
+      <div class="badge"><span class="badge-icon">📁</span>File delivery</div>
+      <div class="badge"><span class="badge-icon">🆓</span>100% free</div>
     </div>
 
-    <!-- Terminal Preview -->
-    <div class="terminal reveal" style="margin: 0 0 80px; max-width: 700px; margin: 0 auto 80px;">
-      <div class="terminal-header">
-        <div class="term-dot term-dot-r"></div>
-        <div class="term-dot term-dot-y"></div>
-        <div class="term-dot term-dot-g"></div>
-        <span class="terminal-title">Salman Dev Bot v3.0 — Live</span>
+    <div class="terminal reveal">
+      <div class="term-bar">
+        <div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div>
+        <span class="term-title">SalmanDevBot — Terminal</span>
       </div>
-      <div class="terminal-body" id="terminal-demo">
-        <div><span class="term-prompt">you:</span> <span class="term-cmd">/landing SaaS for AI code review tool</span></div>
-        <div style="margin-top:8px"><span class="term-out">🎨 Designing... </span><span class="term-accent">Qwen3 + DeepSeek racing</span></div>
-        <div><span class="term-success">✅ Landing page ready! (2.4s)</span></div>
-        <div style="margin-top:8px"><span class="term-prompt">you:</span> <span class="term-cmd">/architect real-time chat for 1M users</span></div>
-        <div style="margin-top:4px"><span class="term-success">✅ Architecture complete! (1.8s)</span></div>
-        <div><span class="term-out">→ ASCII diagram, tech stack, DB schema, scaling strategy</span></div>
-        <div style="margin-top:8px"><span class="term-prompt">you:</span> <span class="term-cmd">/research latest Bun 1.2 features</span></div>
-        <div style="margin-top:4px"><span class="term-accent">🌐 Groq Compound searching web...</span></div>
-        <div><span class="term-success">✅ Research done! (3.1s) — live web results</span></div>
-        <div style="margin-top:8px"><span class="term-prompt">›</span> <span class="term-cursor"></span></div>
+      <div class="term-body">
+        <div><span class="tc-p">›</span> <span class="tc-cmd">/landing SaaS for AI code review</span></div>
+        <div><span class="tc-hl">⏳ Generating...</span></div>
+        <div><span class="tc-ok">✓ landing_saas_for_ai_code_review.html (2.4s)</span></div>
+        <div style="margin-top:8px"><span class="tc-p">›</span> <span class="tc-cmd">/architect real-time chat for 1M users</span></div>
+        <div><span class="tc-ok">✓ Architecture complete (1.8s)</span></div>
+        <div><span class="tc-out">  ASCII diagram · tech stack · DB schema · scaling</span></div>
+        <div style="margin-top:8px"><span class="tc-p">›</span> <span class="tc-cmd">/research latest Bun 2 features</span></div>
+        <div><span class="tc-hl">🌐 Searching the web...</span></div>
+        <div><span class="tc-ok">✓ Research complete (3.1s) — live results</span></div>
+        <div style="margin-top:8px"><span class="tc-p">›</span> <span class="cursor"></span></div>
       </div>
     </div>
 
-    <!-- Features -->
-    <div class="section" id="features">
-      <div class="section-title reveal" style="margin-bottom: 40px;">
-        <div class="section-tag">✦ Features</div>
-        <h2>Everything a developer needs</h2>
-        <p>Built fast, built right — no bloat, no limits</p>
+    <section id="features">
+      <div class="reveal" style="margin-bottom:36px">
+        <div class="sec-label">✦ Features</div>
+        <h2 class="sec-h">Everything a developer needs</h2>
+        <p class="sec-p">No bloat. No limits. Just tools that work.</p>
       </div>
-      <div class="features-grid reveal">
-        <div class="feature-card">
-          <div class="feature-icon">⚡</div>
-          <h3>Turbo Race™ Engine</h3>
-          <p>Fires 3+ AI models simultaneously in parallel — the FIRST valid response wins. No waiting, no fallback delays. Pure speed.</p>
+      <div class="feat-grid reveal">
+        <div class="feat">
+          <div class="feat-icon">⚡</div>
+          <h3>Parallel AI Racing</h3>
+          <p>Multiple models fire simultaneously. The fastest valid response wins — no waiting for fallbacks.</p>
         </div>
-        <div class="feature-card">
-          <div class="feature-icon">🌐</div>
+        <div class="feat">
+          <div class="feat-icon">🌐</div>
           <h3>Live Web Search</h3>
-          <p>Groq Compound searches the internet in real-time. Get answers about latest frameworks, packages, and breaking changes from 2025/2026.</p>
+          <p>Groq Compound searches the internet in real-time. Get answers on the latest packages, docs, and breaking changes.</p>
         </div>
-        <div class="feature-card">
-          <div class="feature-icon">🧠</div>
+        <div class="feat">
+          <div class="feat-icon">🧠</div>
           <h3>Conversation Memory</h3>
-          <p>Remembers full context per user. Ask follow-up questions, iterate on code, build complex systems step by step over multiple messages.</p>
+          <p>Remembers your full conversation context. Ask follow-ups, iterate on code, build systems step by step.</p>
         </div>
-        <div class="feature-card">
-          <div class="feature-icon">🤖</div>
-          <h3>Full Agent Mode</h3>
-          <p>/agent for complex multi-step tasks. Plans, executes, and delivers complete solutions — entire apps, systems, and architectures.</p>
+        <div class="feat">
+          <div class="feat-icon">🤖</div>
+          <h3>Agent Mode</h3>
+          <p>/agent handles complex multi-step tasks. Entire apps, system architectures, and complete solutions.</p>
         </div>
-        <div class="feature-card">
-          <div class="feature-icon">🎨</div>
+        <div class="feat">
+          <div class="feat-icon">🎨</div>
           <h3>Landing Page Builder</h3>
-          <p>Describe your product → complete, beautiful single-file HTML. Deploy to Netlify/Vercel in one click. Animations, responsive, production quality.</p>
+          <p>Describe your product, get a complete HTML file ready to host on Netlify or Vercel.</p>
         </div>
-        <div class="feature-card">
-          <div class="feature-icon">📁</div>
+        <div class="feat">
+          <div class="feat-icon">📁</div>
           <h3>Smart File Delivery</h3>
-          <p>Output too long? Auto-delivered as .py/.js/.html/.ts/.md file. Zero truncation, always complete. Proper mime types and filenames.</p>
+          <p>Long outputs auto-delivered as .py / .js / .html / .md files. Always complete, never truncated.</p>
         </div>
-        <div class="feature-card">
-          <div class="feature-icon">🏗️</div>
-          <h3>System Architect <span class="new-tag">NEW</span></h3>
-          <p>Full architecture design: ASCII diagram, tech stack, DB schema, API contracts, scaling strategy, implementation roadmap.</p>
+        <div class="feat">
+          <div class="feat-icon">🏗️</div>
+          <h3>System Architecture</h3>
+          <p>Full system design with ASCII diagrams, tech stack, DB schema, API contracts, and scaling strategy.</p>
         </div>
-        <div class="feature-card">
-          <div class="feature-icon">🎯</div>
-          <h3>Interview Prep <span class="new-tag">NEW</span></h3>
-          <p>Top questions + answers with code, common gotchas, system design questions, and a cheat sheet — for any tech topic.</p>
+        <div class="feat">
+          <div class="feat-icon">🎯</div>
+          <h3>Interview Prep</h3>
+          <p>Top interview questions with code answers, edge cases, and cheat sheets for any tech topic.</p>
         </div>
-        <div class="feature-card">
-          <div class="feature-icon">💡</div>
-          <h3>Brainstorm Mode <span class="new-tag">NEW</span></h3>
-          <p>10 feature ideas, 5 tech approaches, monetization strategies, risk analysis, and a 90-day MVP roadmap for any idea.</p>
+        <div class="feat">
+          <div class="feat-icon">🚀</div>
+          <h3>Deploy Configs</h3>
+          <p>Dockerfile, docker-compose, and GitHub Actions CI/CD pipelines generated automatically.</p>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Commands -->
-    <div class="section" id="commands">
-      <div class="section-title reveal" style="margin-bottom: 40px;">
-        <div class="section-tag">✦ Commands</div>
-        <h2>45+ commands, all free</h2>
-        <p>Everything at a slash</p>
+    <section id="commands">
+      <div class="reveal" style="margin-bottom:36px">
+        <div class="sec-label">✦ Commands</div>
+        <h2 class="sec-h">45+ commands</h2>
+        <p class="sec-p">All free. No signup required.</p>
       </div>
-      <div class="cmd-section reveal">
-
+      <div class="reveal">
         <div class="cmd-group">
-          <div class="cmd-group-label">🤖 Core AI</div>
+          <div class="cmd-label">AI</div>
           <div class="cmd-pills">
-            <div class="cmd-pill"><span class="cmd-name">/ask</span><span class="cmd-desc">Ask anything</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/generate</span><span class="cmd-desc">Generate code</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/review</span><span class="cmd-desc">Code review</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/explain</span><span class="cmd-desc">Explain concepts</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/fix</span><span class="cmd-desc">Fix broken code</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/translate</span><span class="cmd-desc">Translate text</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/summarize</span><span class="cmd-desc">Summarize text</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/ask</span><span class="cmd-d">Ask anything</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/generate</span><span class="cmd-d">Generate code</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/review</span><span class="cmd-d">Code review</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/explain</span><span class="cmd-d">Explain concepts</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/fix</span><span class="cmd-d">Fix broken code</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/translate</span><span class="cmd-d">Translate text</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/summarize</span><span class="cmd-d">Summarize text</span></div>
           </div>
         </div>
-
         <div class="cmd-group">
-          <div class="cmd-group-label">🔍 Research & Agent</div>
+          <div class="cmd-label">Research</div>
           <div class="cmd-pills">
-            <div class="cmd-pill"><span class="cmd-name">/research</span><span class="cmd-desc">Live web search</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/agent</span><span class="cmd-desc">Multi-step solver</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/models</span><span class="cmd-desc">AI engine status</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/research</span><span class="cmd-d">Live web search</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/agent</span><span class="cmd-d">Multi-step solver</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/models</span><span class="cmd-d">AI status</span></div>
           </div>
         </div>
-
         <div class="cmd-group">
-          <div class="cmd-group-label">⚡ Power Commands</div>
+          <div class="cmd-label">Code Tools</div>
           <div class="cmd-pills">
-            <div class="cmd-pill"><span class="cmd-name">/debug</span><span class="cmd-desc">Debug + error trace</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/optimize</span><span class="cmd-desc">Optimize code</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/test</span><span class="cmd-desc">Generate tests</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/docs</span><span class="cmd-desc">Documentation</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/security</span><span class="cmd-desc">Security audit</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/complexity</span><span class="cmd-desc">Big O analysis</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/convert</span><span class="cmd-desc">Convert languages</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/api</span><span class="cmd-desc">Build REST APIs</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/sql</span><span class="cmd-desc">Generate SQL</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/debug</span><span class="cmd-d">Debug + error trace</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/optimize</span><span class="cmd-d">Optimize code</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/test</span><span class="cmd-d">Generate tests</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/docs</span><span class="cmd-d">Documentation</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/security</span><span class="cmd-d">Security audit</span></div>
+            <div class="cmd-pill"><span class="cmd-name">/complexity</span><span class="cmd-d">Big O analysis</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/convert</span><span class="cmd-d">Convert languages</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/sql</span><span class="cmd-d">Generate SQL</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/api</span><span class="cmd-d">Build REST APIs</span></div>
           </div>
         </div>
-
         <div class="cmd-group">
-          <div class="cmd-group-label">🆕 New in v3.0</div>
+          <div class="cmd-label">Advanced</div>
           <div class="cmd-pills">
-            <div class="cmd-pill"><span class="cmd-name">/architect</span><span class="cmd-desc">System design</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/deploy</span><span class="cmd-desc">Dockerfile + CI/CD</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/interview</span><span class="cmd-desc">Interview prep</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/brainstorm</span><span class="cmd-desc">Ideas + roadmap</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/diff</span><span class="cmd-desc">Compare code</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/commit</span><span class="cmd-desc">Git commit msg</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/error</span><span class="cmd-desc">Explain error</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/readme</span><span class="cmd-desc">README generator</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/perf</span><span class="cmd-desc">Performance analysis</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/refactor</span><span class="cmd-desc">Clean code</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/schema</span><span class="cmd-desc">DB schema designer</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/landing</span><span class="cmd-desc">HTML page builder</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/architect</span><span class="cmd-d">System design</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/deploy</span><span class="cmd-d">Dockerfile + CI/CD</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/interview</span><span class="cmd-d">Interview prep</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/brainstorm</span><span class="cmd-d">Ideas + roadmap</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/diff</span><span class="cmd-d">Compare code</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/commit</span><span class="cmd-d">Git commit msg</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/error</span><span class="cmd-d">Explain error</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/readme</span><span class="cmd-d">README generator</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/perf</span><span class="cmd-d">Performance</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/refactor</span><span class="cmd-d">Clean code</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/schema</span><span class="cmd-d">DB schema</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/landing</span><span class="cmd-d">HTML page</span></div>
           </div>
         </div>
-
         <div class="cmd-group">
-          <div class="cmd-group-label">🔧 Dev Tools</div>
+          <div class="cmd-label">Dev Tools</div>
           <div class="cmd-pills">
-            <div class="cmd-pill"><span class="cmd-name">/json</span><span class="cmd-desc">Format JSON</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/hash</span><span class="cmd-desc">SHA-256</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/uuid</span><span class="cmd-desc">Generate UUIDs</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/encode</span><span class="cmd-desc">Base64</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/calc</span><span class="cmd-desc">Calculator</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/password</span><span class="cmd-desc">Password gen</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/snippet</span><span class="cmd-desc">Code snippets</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/color</span><span class="cmd-desc">Color converter</span></div>
-            <div class="cmd-pill"><span class="cmd-name">/ping</span><span class="cmd-desc">Latency check</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/json</span><span class="cmd-d">Format JSON</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/hash</span><span class="cmd-d">SHA-256</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/uuid</span><span class="cmd-d">UUID generator</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/encode</span><span class="cmd-d">Base64</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/calc</span><span class="cmd-d">Calculator</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/password</span><span class="cmd-d">Password gen</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/snippet</span><span class="cmd-d">Code snippets</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/color</span><span class="cmd-d">Color converter</span></div>
+            <div class="cmd-pill"><span class="cmd-n">/ping</span><span class="cmd-d">Latency</span></div>
           </div>
         </div>
-
       </div>
-    </div>
+    </section>
 
-    <!-- Models -->
-    <div class="section" id="models">
-      <div class="section-title reveal" style="margin-bottom: 40px;">
-        <div class="section-tag">✦ AI Engine</div>
-        <h2>2025/2026 Models</h2>
-        <p>Auto-routes to best model per task. Turbo Race™ fires them in parallel.</p>
+    <section id="models">
+      <div class="reveal" style="margin-bottom:36px">
+        <div class="sec-label">✦ AI Engine</div>
+        <h2 class="sec-h">Latest models</h2>
+        <p class="sec-p">Auto-routes per task. Multiple models race in parallel.</p>
       </div>
-      <div class="models-grid reveal">
-        <div class="model-card" style="border-color: rgba(129,140,248,0.3);">
-          <div class="model-type" style="background: rgba(129,140,248,0.1); color: var(--accent);">CODING</div>
+      <div class="model-grid reveal">
+        <div class="model" style="border-color:rgba(124,111,205,0.3)">
+          <div class="model-tag" style="background:rgba(124,111,205,0.1);color:var(--accent)">CODING</div>
           <h3>Qwen3 Coder Plus</h3>
-          <p>1M context · 2025 SWE-bench SOTA · primary coding model</p>
+          <p>1M context · SWE-bench top performer · primary coding model</p>
         </div>
-        <div class="model-card" style="border-color: rgba(34,211,238,0.3);">
-          <div class="model-type" style="background: rgba(34,211,238,0.1); color: var(--accent2);">CODING</div>
+        <div class="model" style="border-color:rgba(34,196,224,0.3)">
+          <div class="model-tag" style="background:rgba(34,196,224,0.1);color:var(--accent2)">CODING</div>
           <h3>Kimi K2.5</h3>
-          <p>1T params · Moonshot AI · elite coder + reasoning</p>
+          <p>1T params · Moonshot AI · elite coder and reasoner</p>
         </div>
-        <div class="model-card" style="border-color: rgba(52,211,153,0.3);">
-          <div class="model-type" style="background: rgba(52,211,153,0.1); color: var(--green);">RESEARCH</div>
+        <div class="model" style="border-color:rgba(45,212,160,0.3)">
+          <div class="model-tag" style="background:rgba(45,212,160,0.1);color:var(--green)">RESEARCH</div>
           <h3>Groq Compound</h3>
-          <p>Built-in live web search · real-time internet data · ultra fast</p>
+          <p>Native live web search · real-time internet data</p>
         </div>
-        <div class="model-card" style="border-color: rgba(251,146,60,0.3);">
-          <div class="model-type" style="background: rgba(251,146,60,0.1); color: var(--orange);">REASONING</div>
+        <div class="model" style="border-color:rgba(245,158,11,0.3)">
+          <div class="model-tag" style="background:rgba(245,158,11,0.1);color:var(--orange)">REASONING</div>
           <h3>DeepSeek R1-0528</h3>
-          <p>Chain-of-thought · best for debugging, analysis, complex reasoning</p>
+          <p>Chain-of-thought · best for debugging and complex analysis</p>
         </div>
-        <div class="model-card" style="border-color: rgba(244,114,182,0.3);">
-          <div class="model-type" style="background: rgba(244,114,182,0.1); color: var(--pink);">SPEED</div>
+        <div class="model" style="border-color:rgba(236,72,153,0.3)">
+          <div class="model-tag" style="background:rgba(236,72,153,0.1);color:var(--pink)">SPEED</div>
           <h3>Groq Llama 4 + Qwen3</h3>
-          <p>Sub-1s responses on Groq infrastructure · ultra-low latency</p>
+          <p>Sub-1s responses · Groq infrastructure · ultra-low latency</p>
         </div>
-        <div class="model-card" style="border-color: rgba(167,139,250,0.3);">
-          <div class="model-type" style="background: rgba(167,139,250,0.1); color: var(--accent3);">REASONING</div>
+        <div class="model" style="border-color:rgba(159,122,234,0.3)">
+          <div class="model-tag" style="background:rgba(159,122,234,0.1);color:var(--accent3)">REASONING</div>
           <h3>Gemini 2.5 Pro</h3>
-          <p>Google · 1M context · multimodal · deep reasoning fallback</p>
+          <p>Google · 1M context · multimodal · deep reasoning</p>
         </div>
       </div>
-    </div>
+    </section>
   </div>
 
-  <!-- CTA -->
-  <div class="cta-section">
+  <div class="cta-sec">
     <div class="container">
       <h2>Start building faster</h2>
-      <p>Free forever. No signup. Just open Telegram and go.</p>
-      <a href="https://t.me/SalmanDevToolsBot" class="btn btn-primary" target="_blank" rel="noopener" style="font-size: 16px; padding: 15px 32px;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.14 14.231l-2.98-.929c-.648-.203-.66-.648.136-.961l11.647-4.494c.54-.194 1.01.132.95.374z"/></svg>
+      <p>Free forever. No account needed. Open Telegram and go.</p>
+      <a href="https://t.me/SalmanDevToolsBot" class="btn btn-p" target="_blank" rel="noopener" style="font-size:15px;padding:13px 28px">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.14 14.231l-2.98-.929c-.648-.203-.66-.648.136-.961l11.647-4.494c.54-.194 1.01.132.95.374z"/></svg>
         Open @SalmanDevToolsBot
       </a>
     </div>
   </div>
 
-  <!-- Footer -->
   <footer>
     <div class="container">
-      <div class="footer-links">
+      <div class="foot-links">
         <a href="https://t.me/SalmanDevToolsBot" target="_blank">Telegram</a>
         <a href="https://github.com/salman-dev-app" target="_blank">GitHub</a>
         <a href="/terms">Terms</a>
       </div>
-      <p>Created by <a href="https://github.com/salman-dev-app">Md Salman Biswas</a> · Salman Dev Bot v3.0 · Running on Cloudflare Workers</p>
+      <p>Created by <a href="https://github.com/salman-dev-app">Md Salman Biswas</a> · Running on Cloudflare Workers</p>
     </div>
   </footer>
 
   <script>
-    // ── Particle Canvas ──────────────────────────────────────────────────────
-    const canvas = document.getElementById('canvas-bg');
-    const ctx = canvas.getContext('2d');
-    let W, H, particles = [];
-
-    function resize() {
-      W = canvas.width = window.innerWidth;
-      H = canvas.height = window.innerHeight;
-    }
+    // Particle canvas
+    const cv = document.getElementById('bg-canvas');
+    const cx = cv.getContext('2d');
+    let W, H, pts = [];
+    function resize() { W = cv.width = innerWidth; H = cv.height = innerHeight; }
     resize();
-    window.addEventListener('resize', resize);
+    addEventListener('resize', resize);
 
-    class Particle {
-      constructor() { this.reset(); }
-      reset() {
-        this.x = Math.random() * W;
-        this.y = Math.random() * H;
-        this.vx = (Math.random() - 0.5) * 0.3;
-        this.vy = (Math.random() - 0.5) * 0.3;
-        this.alpha = Math.random() * 0.4 + 0.1;
-        this.r = Math.random() * 1.5 + 0.5;
-        this.color = Math.random() > 0.5 ? '129,140,248' : '34,211,238';
+    class P {
+      constructor() { this.init(); }
+      init() {
+        this.x = Math.random() * W; this.y = Math.random() * H;
+        this.vx = (Math.random()-0.5)*0.25; this.vy = (Math.random()-0.5)*0.25;
+        this.a = Math.random()*0.35+0.05;
+        this.r = Math.random()*1.4+0.4;
+        this.c = Math.random()>0.5 ? '124,111,205' : '34,196,224';
       }
-      update() {
+      step() {
         this.x += this.vx; this.y += this.vy;
-        if (this.x < 0 || this.x > W || this.y < 0 || this.y > H) this.reset();
+        if (this.x<0||this.x>W||this.y<0||this.y>H) this.init();
       }
       draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(' + this.color + ',' + this.alpha + ')';
-        ctx.fill();
+        cx.beginPath(); cx.arc(this.x,this.y,this.r,0,Math.PI*2);
+        cx.fillStyle = 'rgba('+this.c+','+this.a+')'; cx.fill();
       }
     }
-
-    for (let i = 0; i < 80; i++) particles.push(new Particle());
-
-    function animParticles() {
-      ctx.clearRect(0, 0, W, H);
-      // Draw lines between nearby particles
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.sqrt(dx*dx + dy*dy);
-          if (dist < 120) {
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = 'rgba(129,140,248,' + (0.06 * (1 - dist/120)) + ')';
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
-          }
+    for (let i=0;i<70;i++) pts.push(new P());
+    function anim() {
+      cx.clearRect(0,0,W,H);
+      for (let i=0;i<pts.length;i++) {
+        for (let j=i+1;j<pts.length;j++) {
+          const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y, d=Math.sqrt(dx*dx+dy*dy);
+          if (d<110) { cx.beginPath(); cx.moveTo(pts[i].x,pts[i].y); cx.lineTo(pts[j].x,pts[j].y); cx.strokeStyle='rgba(124,111,205,'+(0.05*(1-d/110))+')'; cx.lineWidth=0.4; cx.stroke(); }
         }
-        particles[i].update();
-        particles[i].draw();
+        pts[i].step(); pts[i].draw();
       }
-      requestAnimationFrame(animParticles);
+      requestAnimationFrame(anim);
     }
-    animParticles();
+    anim();
 
-    // ── Counter animation ─────────────────────────────────────────────────────
-    function animateCounter(el, target) {
-      let start = 0;
-      const step = Math.ceil(target / 40);
-      const timer = setInterval(() => {
-        start = Math.min(start + step, target);
-        el.textContent = start + '+';
-        if (start >= target) clearInterval(timer);
-      }, 30);
+    // Counter
+    function count(el, n) {
+      let v=0; const step=Math.ceil(n/38);
+      const t=setInterval(()=>{ v=Math.min(v+step,n); el.textContent=v+'+'; if(v>=n)clearInterval(t); },28);
     }
 
-    // ── Scroll reveal ─────────────────────────────────────────────────────────
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
+    // Scroll reveal
+    const obs = new IntersectionObserver(es => {
+      es.forEach(e => {
         if (e.isIntersecting) {
           e.target.classList.add('visible');
-          // Trigger counters
-          e.target.querySelectorAll('[data-count]').forEach(el => {
-            animateCounter(el, parseInt(el.dataset.count));
-          });
+          e.target.querySelectorAll('[data-count]').forEach(el => count(el, parseInt(el.dataset.count)));
         }
       });
-    }, { threshold: 0.15 });
-
-    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
-
-    // ── Typed terminal effect ─────────────────────────────────────────────────
-    const lines = [
-      { cls: 'term-prompt', pre: 'you: ', text: '/landing SaaS for AI code review tool', cmd: true },
-      { cls: 'term-out', text: '🎨 Designing... firing Qwen3 + DeepSeek simultaneously' },
-      { cls: 'term-success', text: '✅ Landing page ready in 2.4s — HTML file delivered' },
-      { cls: 'term-prompt', pre: 'you: ', text: '/architect real-time chat for 1M users', cmd: true },
-      { cls: 'term-success', text: '✅ Architecture complete in 1.8s' },
-      { cls: 'term-out', text: '→ ASCII diagram, tech stack, DB schema, scaling strategy' },
-      { cls: 'term-prompt', pre: 'you: ', text: '/research latest Bun 1.2 features', cmd: true },
-      { cls: 'term-accent', text: '🌐 Groq Compound searching the web in real-time...' },
-      { cls: 'term-success', text: '✅ Research done in 3.1s — live web results included' },
-    ];
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
   </script>
 </body>
 </html>`;
