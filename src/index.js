@@ -6,6 +6,7 @@
 import { StateManager, getUserLang, setUserLang, incrementStat, getStats } from './utils/state.js';
 import { sendMessage, editMessageText, answerCallbackQuery, inlineKeyboard, sendChatAction, sendDocument } from './utils/telegram.js';
 import { needsFile, detectFileType, getMimeType, buildFileName, extractCode, wrapAsPreview } from './utils/fileHelper.js';
+import { withLoader } from './utils/loader.js';
 import {
   askAI, reviewCode, explainConcept, fixCode,
   generateCode, summarizeText, translateText,
@@ -216,11 +217,10 @@ async function handleAsk(token, msg, env, state, args) {
   const cid = msg.chat.id;
   const question = args.join(' ').trim();
   if (!question) return sendMessage(token, cid, 'Usage: `/ask <your question>`');
-  await sendChatAction(token, cid, 'typing');
   await incrementStat(state, 'ai_calls');
-  const answer = await askAI(env, question);
+  const { result: answer, elapsed, msgId } = await withLoader(token, cid, 'general', () => askAI(env, question));
   if (!answer) return sendMessage(token, cid, '⚠️ AI unavailable right now. Try again.');
-  return sendSmartResponse(token, cid, answer, state, 'answer', msg);
+  return sendSmartResponse(token, cid, answer, state, 'answer', msg, msgId);
 }
 
 async function handleResearch(token, msg, env, state, args) {
@@ -228,12 +228,10 @@ async function handleResearch(token, msg, env, state, args) {
   const query = args.join(' ').trim();
   if (!query) return sendMessage(token, cid,
     'Usage: `/research <topic>`\n\nExamples:\n`/research latest React 19 features`\n`/research best vector database 2025`\n`/research how does WASM memory work`\n\nI\'ll search the web and give you a real answer.');
-  await sendChatAction(token, cid, 'typing');
-  const thinking = await sendMessage(token, cid, `🔍 Researching...`);
   await incrementStat(state, 'ai_calls');
-  const result = await researchAndAnswer(env, query);
+  const { result, elapsed, msgId } = await withLoader(token, cid, 'research', () => researchAndAnswer(env, query));
   if (!result) return sendMessage(token, cid, '⚠️ Research failed. Try again.');
-  return sendSmartResponse(token, cid, result, state, 'research', msg);
+  return sendSmartResponse(token, cid, result, state, 'research', msg, msgId);
 }
 
 async function handleAgent(token, msg, env, state, args) {
@@ -241,12 +239,10 @@ async function handleAgent(token, msg, env, state, args) {
   const task = args.join(' ').trim();
   if (!task) return sendMessage(token, cid,
     'Usage: `/agent <complex task>`\n\nFor big tasks that need planning + execution:\n`/agent build a full auth system with JWT and refresh tokens in Node.js`\n`/agent create a Python web scraper with rate limiting and proxy rotation`\n`/agent design a distributed task queue with Redis`');
-  await sendChatAction(token, cid, 'typing');
-  await sendMessage(token, cid, `⚡ Working on it...`);
   await incrementStat(state, 'ai_calls');
-  const result = await agentSolve(env, task);
+  const { result, elapsed, msgId } = await withLoader(token, cid, 'agent', () => agentSolve(env, task));
   if (!result) return sendMessage(token, cid, '⚠️ Agent failed. Try again.');
-  return sendSmartResponse(token, cid, result, state, task, msg);
+  return sendSmartResponse(token, cid, result, state, task, msg, msgId);
 }
 
 async function handleModelStatus(token, msg) {
@@ -269,55 +265,50 @@ async function handleReview(token, msg, env, state, args) {
   const cid = msg.chat.id;
   const code = args.join(' ').trim();
   if (!code) return sendMessage(token, cid, 'Usage: `/review <your code>`');
-  await sendChatAction(token, cid, 'typing');
   await incrementStat(state, 'ai_calls');
-  const result = await reviewCode(env, code);
+  const { result, msgId } = await withLoader(token, cid, 'review', () => reviewCode(env, code));
   if (!result) return sendMessage(token, cid, '⚠️ AI unavailable right now. Try again.');
-  return sendSmartResponse(token, cid, result, state, 'code_review', msg);
+  return sendSmartResponse(token, cid, result, state, 'code_review', msg, msgId);
 }
 
 async function handleExplain(token, msg, env, state, args) {
   const cid = msg.chat.id;
   const concept = args.join(' ').trim();
   if (!concept) return sendMessage(token, cid, 'Usage: `/explain <concept>`');
-  await sendChatAction(token, cid, 'typing');
   await incrementStat(state, 'ai_calls');
-  const result = await explainConcept(env, concept);
+  const { result, msgId } = await withLoader(token, cid, 'explain', () => explainConcept(env, concept));
   if (!result) return sendMessage(token, cid, '⚠️ AI unavailable. Try again.');
-  return sendSmartResponse(token, cid, result, state, 'explanation', msg);
+  return sendSmartResponse(token, cid, result, state, 'explanation', msg, msgId);
 }
 
 async function handleFix(token, msg, env, state, args) {
   const cid = msg.chat.id;
   const code = args.join(' ').trim();
   if (!code) return sendMessage(token, cid, 'Usage: `/fix <broken code>`');
-  await sendChatAction(token, cid, 'typing');
   await incrementStat(state, 'ai_calls');
-  const result = await fixCode(env, code);
+  const { result, msgId } = await withLoader(token, cid, 'fix', () => fixCode(env, code));
   if (!result) return sendMessage(token, cid, '⚠️ AI unavailable. Try again.');
-  return sendSmartResponse(token, cid, result, state, 'fixed_code', msg);
+  return sendSmartResponse(token, cid, result, state, 'fixed_code', msg, msgId);
 }
 
 async function handleGenerate(token, msg, env, state, args) {
   const cid = msg.chat.id;
   const desc = args.join(' ').trim();
   if (!desc) return sendMessage(token, cid, 'Usage: `/generate <what to build>`\n\nExamples:\n`/generate REST API with Node.js`\n`/generate React todo app`\n`/generate binary search in Python`');
-  await sendChatAction(token, cid, 'typing');
   await incrementStat(state, 'ai_calls');
-  const result = await generateCode(env, desc);
+  const { result, msgId } = await withLoader(token, cid, 'coding', () => generateCode(env, desc));
   if (!result) return sendMessage(token, cid, '⚠️ AI unavailable. Try again.');
-  return sendSmartResponse(token, cid, result, state, desc, msg);
+  return sendSmartResponse(token, cid, result, state, desc, msg, msgId);
 }
 
 async function handleSummarize(token, msg, env, state, args) {
   const cid = msg.chat.id;
   const text = args.join(' ').trim();
   if (!text) return sendMessage(token, cid, 'Usage: `/summarize <text>`');
-  await sendChatAction(token, cid, 'typing');
   await incrementStat(state, 'ai_calls');
-  const result = await summarizeText(env, text);
+  const { result, msgId } = await withLoader(token, cid, 'general', () => summarizeText(env, text));
   if (!result) return sendMessage(token, cid, '⚠️ AI unavailable. Try again.');
-  return sendSmartResponse(token, cid, result, state, 'summary', msg);
+  return sendSmartResponse(token, cid, result, state, 'summary', msg, msgId);
 }
 
 async function handleTranslate(token, msg, env, state, args) {
@@ -326,126 +317,114 @@ async function handleTranslate(token, msg, env, state, args) {
   const [targetLang, ...rest] = args;
   const text = rest.join(' ').trim();
   if (!text) return sendMessage(token, cid, 'Usage: `/translate <language> <text>`');
-  await sendChatAction(token, cid, 'typing');
   await incrementStat(state, 'ai_calls');
-  const result = await translateText(env, text, targetLang);
+  const { result, msgId } = await withLoader(token, cid, 'convert', () => translateText(env, text, targetLang));
   if (!result) return sendMessage(token, cid, '⚠️ AI unavailable. Try again.');
-  return sendSmartResponse(token, cid, result, state, 'translation', msg);
+  return sendSmartResponse(token, cid, result, state, 'translation', msg, msgId);
 }
 
 async function handleDebug(token, msg, env, state, args) {
   const cid = msg.chat.id;
   const input = args.join(' ').trim();
   if (!input) return sendMessage(token, cid, 'Usage: `/debug <code> | <error message>`\n\nSeparate code and error with a pipe |');
-  await sendChatAction(token, cid, 'typing');
   await incrementStat(state, 'ai_calls');
   const parts = input.split('|');
   const code = parts[0].trim();
   const error = parts[1]?.trim() || 'unknown error';
-  const result = await debugCode(env, code, error);
+  const { result, msgId } = await withLoader(token, cid, 'debug', () => debugCode(env, code, error));
   if (!result) return sendMessage(token, cid, '⚠️ AI unavailable. Try again.');
-  return sendSmartResponse(token, cid, result, state, 'debug', msg);
+  return sendSmartResponse(token, cid, result, state, 'debug', msg, msgId);
 }
 
 async function handleOptimize(token, msg, env, state, args) {
   const cid = msg.chat.id;
   const code = args.join(' ').trim();
   if (!code) return sendMessage(token, cid, 'Usage: `/optimize <your code>`');
-  await sendChatAction(token, cid, 'typing');
   await incrementStat(state, 'ai_calls');
-  const result = await optimizeCode(env, code);
+  const { result, msgId } = await withLoader(token, cid, 'optimize', () => optimizeCode(env, code));
   if (!result) return sendMessage(token, cid, '⚠️ AI unavailable. Try again.');
-  return sendSmartResponse(token, cid, result, state, 'optimized_code', msg);
+  return sendSmartResponse(token, cid, result, state, 'optimized_code', msg, msgId);
 }
 
 async function handleTest(token, msg, env, state, args) {
   const cid = msg.chat.id;
   const code = args.join(' ').trim();
   if (!code) return sendMessage(token, cid, 'Usage: `/test <your code>`\n\nGenerates unit tests for your code.');
-  await sendChatAction(token, cid, 'typing');
   await incrementStat(state, 'ai_calls');
-  const result = await generateTests(env, code);
+  const { result, msgId } = await withLoader(token, cid, 'test', () => generateTests(env, code));
   if (!result) return sendMessage(token, cid, '⚠️ AI unavailable. Try again.');
-  return sendSmartResponse(token, cid, result, state, 'tests', msg);
+  return sendSmartResponse(token, cid, result, state, 'tests', msg, msgId);
 }
 
 async function handleDocs(token, msg, env, state, args) {
   const cid = msg.chat.id;
   const code = args.join(' ').trim();
   if (!code) return sendMessage(token, cid, 'Usage: `/docs <your code>`\n\nGenerates documentation for your code.');
-  await sendChatAction(token, cid, 'typing');
   await incrementStat(state, 'ai_calls');
-  const result = await generateDocumentation(env, code);
+  const { result, msgId } = await withLoader(token, cid, 'docs', () => generateDocumentation(env, code));
   if (!result) return sendMessage(token, cid, '⚠️ AI unavailable. Try again.');
-  return sendSmartResponse(token, cid, result, state, 'documentation', msg);
+  return sendSmartResponse(token, cid, result, state, 'documentation', msg, msgId);
 }
 
 async function handleConvert(token, msg, env, state, args) {
   const cid = msg.chat.id;
-  // Format: /convert python javascript <code>
   if (args.length < 3) return sendMessage(token, cid, 'Usage: `/convert <from_lang> <to_lang> <code>`\n\nExample: `/convert python javascript def add(a,b): return a+b`');
   const [fromLang, toLang, ...codeParts] = args;
   const code = codeParts.join(' ').trim();
-  await sendChatAction(token, cid, 'typing');
   await incrementStat(state, 'ai_calls');
-  const result = await convertCode(env, code, fromLang, toLang);
+  const { result, msgId } = await withLoader(token, cid, 'convert', () => convertCode(env, code, fromLang, toLang));
   if (!result) return sendMessage(token, cid, '⚠️ AI unavailable. Try again.');
-  return sendSmartResponse(token, cid, result, state, `${fromLang}_to_${toLang}`, msg);
+  return sendSmartResponse(token, cid, result, state, `${fromLang}_to_${toLang}`, msg, msgId);
 }
 
 async function handleComplexity(token, msg, env, state, args) {
   const cid = msg.chat.id;
   const code = args.join(' ').trim();
   if (!code) return sendMessage(token, cid, 'Usage: `/complexity <your code>`\n\nAnalyzes time and space complexity.');
-  await sendChatAction(token, cid, 'typing');
   await incrementStat(state, 'ai_calls');
-  const result = await analyzeComplexity(env, code);
+  const { result, msgId } = await withLoader(token, cid, 'review', () => analyzeComplexity(env, code));
   if (!result) return sendMessage(token, cid, '⚠️ AI unavailable. Try again.');
-  return sendSmartResponse(token, cid, result, state, 'complexity_analysis', msg);
+  return sendSmartResponse(token, cid, result, state, 'complexity_analysis', msg, msgId);
 }
 
 async function handleSecurity(token, msg, env, state, args) {
   const cid = msg.chat.id;
   const code = args.join(' ').trim();
   if (!code) return sendMessage(token, cid, 'Usage: `/security <your code>`\n\nAudits your code for vulnerabilities.');
-  await sendChatAction(token, cid, 'typing');
   await incrementStat(state, 'ai_calls');
-  const result = await securityAudit(env, code);
+  const { result, msgId } = await withLoader(token, cid, 'security', () => securityAudit(env, code));
   if (!result) return sendMessage(token, cid, '⚠️ AI unavailable. Try again.');
-  return sendSmartResponse(token, cid, result, state, 'security_audit', msg);
+  return sendSmartResponse(token, cid, result, state, 'security_audit', msg, msgId);
 }
 
 async function handleRegexGen(token, msg, env, state, args) {
   const cid = msg.chat.id;
   const desc = args.join(' ').trim();
   if (!desc) return sendMessage(token, cid, 'Usage: `/regex <what to match>`\n\nExample: `/regex email addresses`');
-  await sendChatAction(token, cid, 'typing');
   await incrementStat(state, 'ai_calls');
-  const result = await generateRegex(env, desc);
+  const { result, msgId } = await withLoader(token, cid, 'coding', () => generateRegex(env, desc));
   if (!result) return sendMessage(token, cid, '⚠️ AI unavailable. Try again.');
-  return sendSmartResponse(token, cid, result, state, 'regex', msg);
+  return sendSmartResponse(token, cid, result, state, 'regex', msg, msgId);
 }
 
 async function handleSQL(token, msg, env, state, args) {
   const cid = msg.chat.id;
   const desc = args.join(' ').trim();
   if (!desc) return sendMessage(token, cid, 'Usage: `/sql <what you need>`\n\nExample: `/sql find top 10 users by order count`');
-  await sendChatAction(token, cid, 'typing');
   await incrementStat(state, 'ai_calls');
-  const result = await generateSQL(env, desc);
+  const { result, msgId } = await withLoader(token, cid, 'coding', () => generateSQL(env, desc));
   if (!result) return sendMessage(token, cid, '⚠️ AI unavailable. Try again.');
-  return sendSmartResponse(token, cid, result, state, 'query', msg);
+  return sendSmartResponse(token, cid, result, state, 'query', msg, msgId);
 }
 
 async function handleAPIGen(token, msg, env, state, args) {
   const cid = msg.chat.id;
   const desc = args.join(' ').trim();
   if (!desc) return sendMessage(token, cid, 'Usage: `/api <what to build>`\n\nExample: `/api user authentication REST API with JWT`');
-  await sendChatAction(token, cid, 'typing');
   await incrementStat(state, 'ai_calls');
-  const result = await generateAPI(env, desc);
+  const { result, msgId } = await withLoader(token, cid, 'coding', () => generateAPI(env, desc));
   if (!result) return sendMessage(token, cid, '⚠️ AI unavailable. Try again.');
-  return sendSmartResponse(token, cid, result, state, 'api', msg);
+  return sendSmartResponse(token, cid, result, state, 'api', msg, msgId);
 }
 
 async function handleLandingPage(token, msg, env, state, args) {
@@ -454,28 +433,27 @@ async function handleLandingPage(token, msg, env, state, args) {
   if (!desc) return sendMessage(token, cid,
     `Usage: \`/landing <description>\`\n\nExamples:\n\`/landing SaaS app for project management\`\n\`/landing portfolio for a photographer\`\n\`/landing food delivery startup\`\n\nI'll generate a complete, beautiful single-page HTML file you can host anywhere.`
   );
-  await sendChatAction(token, cid, 'typing');
-  await sendMessage(token, cid, '⚡ Generating your landing page...');
   await incrementStat(state, 'ai_calls');
-  const html = await generateLandingPage(env, desc);
+  const { result: html, elapsed, msgId } = await withLoader(token, cid, 'landing', () => generateLandingPage(env, desc));
   if (!html) return sendMessage(token, cid, '⚠️ AI unavailable. Try again.');
 
   await incrementStat(state, 'files_sent');
   const filename = buildFileName(desc, 'html');
   await sendDocument(token, cid, filename, html,
-    `✅ Your landing page is ready!\n\nSave the file and open it in any browser, or upload to Netlify/Vercel to host it live.\n\n_Generated for: ${desc.slice(0, 100)}_`,
+    `✅ Landing page ready! _(${elapsed}s)_\n\nOpen in any browser or drop on Netlify/Vercel.\n\n_Generated for: ${desc.slice(0, 100)}_`,
     'text/html'
   );
 }
 
 // Smart response: send as message if short, as file if long
-async function sendSmartResponse(token, chatId, content, state, hint, msg) {
+// loaderMsgId: if set, the loader completion message was already sent — reply below it
+async function sendSmartResponse(token, chatId, content, state, hint, msg, loaderMsgId) {
   if (needsFile(content)) {
     const ext = detectFileType(content, hint);
     const filename = buildFileName(hint, ext);
     await incrementStat(state, 'files_sent');
     return sendDocument(token, chatId, filename, content,
-      `Output was too long for a message — here's the file.\n\n_${filename}_`,
+      `Here's your file.\n\n_${filename}_`,
       getMimeType(ext)
     );
   }
@@ -491,13 +469,11 @@ async function handleAIChat(msg, env, state, text) {
   const userId = msg.from?.id;
   if (!text.trim()) return;
 
-  await sendChatAction(token, cid, 'typing');
   await incrementStat(state, 'ai_calls');
-
-  const answer = await chatWithMemory(env, userId, text, state);
+  const { result: answer, msgId } = await withLoader(token, cid, 'general', () => chatWithMemory(env, userId, text, state));
   if (!answer) return;
 
-  return sendSmartResponse(token, cid, answer, state, 'response', msg);
+  return sendSmartResponse(token, cid, answer, state, 'response', msg, msgId);
 }
 
 // ─── /start ──────────────────────────────────────────────────────────────────
